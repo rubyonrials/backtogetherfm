@@ -1,0 +1,102 @@
+<html>
+  <head>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Mulish&display=swap');
+
+      body {
+        margin: 26px;
+        display: flex;
+        background: radial-gradient(#f7f3ea 25%, #f8e4ab);
+      }
+
+      h1 {
+        color: #d39a00;
+        font-size: 30px;
+        font-family: 'Berkshire Swash', cursive;
+        text-shadow: 1px 1px #ff820038;
+        margin-bottom: 0;
+      }
+
+      .content {
+        text-align: center;
+        margin: auto;
+      }
+
+      p {
+        font-family: 'Mulish';
+        color: #d39a00;
+        margin-top: 5px;
+      }
+
+      .radio-controls {
+        display: flex;
+        justify-content: center;
+      }
+
+      .radio-control {
+        font-size: 28px;
+        width: 30%;
+        padding: 25px;
+        margin: 0 15px;
+        user-select: none;
+      }
+      .radio-control:hover {cursor: pointer;}
+    </style>
+  </head>
+
+  <body id='body'>
+    <div class='content'>
+      <h1>BackTogether.FM</h1>
+      <p>
+        A public silent disco with your own earphones.
+        Made by <a href='https://github.com/rubyonrials' target='_blank'>Matt</a>.
+      </p>
+
+      <div class='radio-controls'>
+        <div id='channel-up' class='radio-control' style='display:none;'></div>
+        <div id='play' class='radio-control'>▶️</div>
+        <div id='pause' class='radio-control' style='display:none;'>⏸</div>
+        <div id='channel-down' class='radio-control' style='display:none;'></div>
+      </div>
+    </div>
+
+    <script>
+      const channelButtons = [null,'🔴','🟢','🔵'];
+      const channelColors = [null, '#d80000', '#19d800', '#008bd8'];
+      var currentChannel = Math.floor(Math.random() * 3) + 1;
+      console.log(currentChannel);
+      var channelUp, channelDown;
+      if (currentChannel == 1) {
+        channelUp = 2;
+        channelDown = 3;
+      } else if (currentChannel == 2) {
+        channelUp = 3;
+        channelDown = 1;
+      } else {
+        channelUp = 1;
+        channelDown = 2;
+      }
+
+      document.getElementById("play").addEventListener("click", play);
+      document.getElementById("pause").addEventListener("click", pause);
+
+      function play() {
+        document.getElementById("body").style.background = `radial-gradient(#f7f3ea 25%, ${channelColors[currentChannel]})`;
+
+        document.getElementById("play").style.display = 'none';
+        document.getElementById("pause").style.display = 'block';
+
+        document.getElementById("channel-up").innerHTML = channelButtons[channelUp];
+        document.getElementById("channel-up").style.display = 'block';
+
+        document.getElementById("channel-down").innerHTML = channelButtons[channelDown];
+        document.getElementById("channel-down").style.display = 'block';
+      }
+
+      function pause() {
+        document.getElementById("pause").style.display = 'none';
+        document.getElementById("play").style.display = 'block';
+      }
+    </script>
+  </body>
+</html>
