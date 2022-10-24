@@ -6,7 +6,7 @@
       body {
         margin: 26px;
         display: flex;
-        background: radial-gradient(#f7f3ea 25%, #f8e4ab);
+        background: radial-gradient(circle at center, #f7f3ea 32%, #f8e4ab);
       }
 
       h1 {
@@ -81,7 +81,7 @@
       document.getElementById("pause").addEventListener("click", pause);
 
       function play() {
-        document.getElementById("body").style.background = `radial-gradient(#f7f3ea 25%, ${channelColors[currentChannel]})`;
+        document.getElementById("body").style.background = `radial-gradient(circle at center, #f7f3ea 32%, ${channelColors[currentChannel]} 77%)`;
 
         document.getElementById("play").style.display = 'none';
         document.getElementById("pause").style.display = 'block';
