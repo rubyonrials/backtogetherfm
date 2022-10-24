@@ -1,3 +1,13 @@
+<!--
+  Client
+  1. Mobile resizing - make everything fit
+  2. Allow channels to be changed (with background color)
+  3. Movement animation, something like https://codepen.io/akashnimare/pen/DojEdg
+
+  Server
+  1. Everything!
+-->
+
 <html>
   <head>
     <style>
@@ -62,7 +72,7 @@
 
     <script>
       const channelButtons = [null,'🔴','🟢','🔵'];
-      const channelColors = [null, '#d80000', '#19d800', '#008bd8'];
+      const channelColors = [null, '#dc322f', '#429900', '#268bd2'];
       var currentChannel = Math.floor(Math.random() * 3) + 1;
       console.log(currentChannel);
       var channelUp, channelDown;
