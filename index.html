@@ -1,7 +1,5 @@
 <!--
   Client
-  1. Mobile resizing - make everything fit
-  2. Allow channels to be changed (with background color)
   3. Movement animation, something like https://codepen.io/akashnimare/pen/DojEdg
 
   Server
@@ -89,39 +87,45 @@
       const channelButtons = [null,'🔴','🟢','🔵'];
       const channelColors = [null, '#dc322f', '#429900', '#268bd2'];
       var currentChannel = Math.floor(Math.random() * 3) + 1;
-      console.log(currentChannel);
       var channelUp, channelDown;
-      if (currentChannel == 1) {
-        channelUp = 2;
-        channelDown = 3;
-      } else if (currentChannel == 2) {
-        channelUp = 3;
-        channelDown = 1;
-      } else {
-        channelUp = 1;
-        channelDown = 2;
-      }
 
-      document.getElementById("play").addEventListener("click", play);
-      document.getElementById("pause").addEventListener("click", pause);
+      function changeChannel(channel) {
+        currentChannel = channel;
 
-      function play() {
-        document.getElementById("page").style.background = `radial-gradient(circle at center, #f7f3ea 37%, ${channelColors[currentChannel]} 73%)`;
-
-        document.getElementById("play").style.display = 'none';
-        document.getElementById("pause").style.display = 'block';
+        if (currentChannel == 1) {
+          channelUp = 2;
+          channelDown = 3;
+        } else if (currentChannel == 2) {
+          channelUp = 3;
+          channelDown = 1;
+        } else {
+          channelUp = 1;
+          channelDown = 2;
+        }
 
         document.getElementById("channel-up").innerHTML = channelButtons[channelUp];
-        document.getElementById("channel-up").style.visibility = 'visible';
-
         document.getElementById("channel-down").innerHTML = channelButtons[channelDown];
+        document.getElementById("page").style.background = `radial-gradient(circle at center, #f7f3ea 37%, ${channelColors[currentChannel]} 73%)`;
+      }
+
+      function play() {
+        document.getElementById("play").style.display = 'none';
+        document.getElementById("pause").style.display = 'block';
+        document.getElementById("channel-up").style.visibility = 'visible';
         document.getElementById("channel-down").style.visibility = 'visible';
+
+        changeChannel(currentChannel);
       }
 
       function pause() {
         document.getElementById("pause").style.display = 'none';
         document.getElementById("play").style.display = 'block';
       }
+
+      document.getElementById("play").addEventListener("click", play);
+      document.getElementById("pause").addEventListener("click", pause);
+      document.getElementById("channel-up").addEventListener("click", () => changeChannel(channelUp));
+      document.getElementById("channel-down").addEventListener("click", () => changeChannel(channelDown));
     </script>
   </body>
 </html>
