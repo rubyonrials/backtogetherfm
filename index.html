@@ -10,13 +10,13 @@
 
 <html>
   <head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Mulish&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Arvo&display=swap');
 
       body {
-        margin: 26px;
-        display: flex;
-        background: radial-gradient(circle at center, #f7f3ea 32%, #f8e4ab);
+        margin: 0;
       }
 
       h1 {
@@ -24,18 +24,30 @@
         font-size: 30px;
         font-family: 'Berkshire Swash', cursive;
         text-shadow: 1px 1px #ff820038;
-        margin-bottom: 0;
+        margin: 0;
       }
 
-      .content {
+      #page {
+        background: radial-gradient(circle at center, #f7f3ea 37%, #f8e4ab);
+        display: flex;
+        justify-content: center;
+        height: 100%;
+      }
+
+      #content {
         text-align: center;
-        margin: auto;
+        justify-content: center;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        max-width: 362px;
+        margin: 25px;
       }
 
       p {
-        font-family: 'Mulish';
+        font-family: 'Arvo';
         color: #d39a00;
-        margin-top: 5px;
+        margin-top: 6px;
       }
 
       .radio-controls {
@@ -45,28 +57,31 @@
 
       .radio-control {
         font-size: 28px;
-        width: 30%;
         padding: 25px;
         margin: 0 15px;
         user-select: none;
+        /* border-radius: 50%;
+        box-shadow: 0px 1px 6px #efae00; */
       }
       .radio-control:hover {cursor: pointer;}
     </style>
   </head>
 
-  <body id='body'>
-    <div class='content'>
-      <h1>BackTogether.FM</h1>
-      <p>
-        A public silent disco with your own earphones.
-        Made by <a href='https://github.com/rubyonrials' target='_blank'>Matt</a>.
-      </p>
+  <body>
+    <div id='page'>
+      <div id='content'>
+        <h1>BackTogether.FM</h1>
+        <p>
+          A public silent disco with your own earphones.
+          Made by <a href='https://github.com/rubyonrials' target='_blank'>Matt</a>.
+        </p>
 
-      <div class='radio-controls'>
-        <div id='channel-up' class='radio-control' style='display:none;'></div>
-        <div id='play' class='radio-control'>▶️</div>
-        <div id='pause' class='radio-control' style='display:none;'>⏸</div>
-        <div id='channel-down' class='radio-control' style='display:none;'></div>
+        <div class='radio-controls'>
+          <div id='channel-up' class='radio-control' style='visibility:hidden;'></div>
+          <div id='play' class='radio-control'>▶️</div>
+          <div id='pause' class='radio-control' style='display:none;'>⏸</div>
+          <div id='channel-down' class='radio-control' style='visibility:hidden;'></div>
+        </div>
       </div>
     </div>
 
@@ -91,16 +106,16 @@
       document.getElementById("pause").addEventListener("click", pause);
 
       function play() {
-        document.getElementById("body").style.background = `radial-gradient(circle at center, #f7f3ea 32%, ${channelColors[currentChannel]} 77%)`;
+        document.getElementById("page").style.background = `radial-gradient(circle at center, #f7f3ea 37%, ${channelColors[currentChannel]} 73%)`;
 
         document.getElementById("play").style.display = 'none';
         document.getElementById("pause").style.display = 'block';
 
         document.getElementById("channel-up").innerHTML = channelButtons[channelUp];
-        document.getElementById("channel-up").style.display = 'block';
+        document.getElementById("channel-up").style.visibility = 'visible';
 
         document.getElementById("channel-down").innerHTML = channelButtons[channelDown];
-        document.getElementById("channel-down").style.display = 'block';
+        document.getElementById("channel-down").style.visibility = 'visible';
       }
 
       function pause() {
