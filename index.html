@@ -9,12 +9,30 @@
 <html>
   <head>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Arvo&display=swap');
 
       body {
         margin: 0;
+      }
+
+      #sunburst {
+        position: absolute;
+        width: 150vmax;
+        height: 150vmax;
+        top: -30vmax;
+        z-index: -1;
+        animation: rotate 36s linear infinite;
+        border-radius: 50%;
+      }
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
       }
 
       h1 {
@@ -26,7 +44,7 @@
       }
 
       #page {
-        background: radial-gradient(circle at center, #f7f3ea 37%, #f8e4ab);
+        background: radial-gradient(circle at center, #f7f3ea 37%, #f8e4ab 73%);
         display: flex;
         justify-content: center;
         height: 100%;
@@ -67,6 +85,7 @@
 
   <body>
     <div id='page'>
+      <div id='sunburst'></div>
       <div id='content'>
         <h1>BackTogether.FM</h1>
         <p>
@@ -85,12 +104,38 @@
 
     <script>
       const channelButtons = [null,'🔴','🟢','🔵'];
-      const channelColors = [null, '#dc322f', '#429900', '#268bd2'];
+      const channelColors = [null, '#dc322f', '#429900ba', '#268bd2'];
+      const channelColorsTransparent = [null, '#dc322f', '#45ff0036', '#268bd2'];
+      const channelDirectory = [null, 'red', 'green', 'blue'];
       var currentChannel = Math.floor(Math.random() * 3) + 1;
-      var channelUp, channelDown;
+      var channelUp, channelDown, audio;
+
+      function play() {
+        document.getElementById("play").style.display = 'none';
+        document.getElementById("pause").style.display = 'block';
+        document.getElementById("channel-up").style.visibility = 'visible';
+        document.getElementById("channel-down").style.visibility = 'visible';
+
+        audio.play();
+      }
+
+      function pause() {
+        document.getElementById("pause").style.display = 'none';
+        document.getElementById("play").style.display = 'block';
+
+        audio.pause();
+      }
 
       function changeChannel(channel) {
-        currentChannel = channel;
+        if (currentChannel !== channel) {
+          currentChannel = channel;
+          if (audio) { audio.pause(); }
+          audio = new Audio(`audio-source/${channelDirectory[currentChannel]}/1.mp3`);
+        }
+
+        if (!audio) {
+          audio = new Audio(`audio-source/${channelDirectory[currentChannel]}/1.mp3`);
+        }
 
         if (currentChannel == 1) {
           channelUp = 2;
@@ -106,23 +151,11 @@
         document.getElementById("channel-up").innerHTML = channelButtons[channelUp];
         document.getElementById("channel-down").innerHTML = channelButtons[channelDown];
         document.getElementById("page").style.background = `radial-gradient(circle at center, #f7f3ea 37%, ${channelColors[currentChannel]} 73%)`;
+        document.getElementById("sunburst").style.background = `repeating-conic-gradient( #9c27b000 0 0deg, ${channelColorsTransparent[currentChannel]} 1deg 1deg , #9c27b000 2deg 3deg)`;
+        play();
       }
 
-      function play() {
-        document.getElementById("play").style.display = 'none';
-        document.getElementById("pause").style.display = 'block';
-        document.getElementById("channel-up").style.visibility = 'visible';
-        document.getElementById("channel-down").style.visibility = 'visible';
-
-        changeChannel(currentChannel);
-      }
-
-      function pause() {
-        document.getElementById("pause").style.display = 'none';
-        document.getElementById("play").style.display = 'block';
-      }
-
-      document.getElementById("play").addEventListener("click", play);
+      document.getElementById("play").addEventListener("click", () => changeChannel(currentChannel));
       document.getElementById("pause").addEventListener("click", pause);
       document.getElementById("channel-up").addEventListener("click", () => changeChannel(channelUp));
       document.getElementById("channel-down").addEventListener("click", () => changeChannel(channelDown));
