@@ -102,8 +102,8 @@
 
     <script>
       const channelButtons = [null,'🔴','🟢','🔵'];
-      const channelColors = [null, '#dc322f', '#429900ba', '#268bd2'];
-      const channelColorsTransparent = [null, '#dc322f', '#45ff0036', '#268bd2'];
+      const channelColors = [null, '#dc322fba', '#429900ba', '#268bd2ba'];
+      const channelColorsTransparent = [null, '#dc322f36', '#45ff0036', '#268bd236'];
       const channelDirectory = [null, 'red', 'green', 'blue'];
       var currentChannel = Math.floor(Math.random() * 3) + 1;
       var channelUp, channelDown, audio;
@@ -114,26 +114,26 @@
         document.getElementById("channel-up").style.visibility = 'visible';
         document.getElementById("channel-down").style.visibility = 'visible';
 
-        audio.play();
+        /* audio.play(); */
       }
 
       function pause() {
         document.getElementById("pause").style.display = 'none';
         document.getElementById("play").style.display = 'block';
 
-        audio.pause();
+        /* audio.pause(); */
       }
 
       function changeChannel(channel) {
         if (currentChannel !== channel) {
           currentChannel = channel;
-          if (audio) { audio.pause(); }
-          audio = new Audio(`audio-source/${channelDirectory[currentChannel]}/1.mp3`);
+          /* if (audio) { audio.pause(); }
+          audio = new Audio(`audio-source/${channelDirectory[currentChannel]}/1.mp3`); */
         }
 
-        if (!audio) {
+        /* if (!audio) {
           audio = new Audio(`audio-source/${channelDirectory[currentChannel]}/1.mp3`);
-        }
+        } */
 
         if (currentChannel == 1) {
           channelUp = 2;
