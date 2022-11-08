@@ -23,7 +23,7 @@
         height: 150vmax;
         top: -30vmax;
         z-index: -1;
-        animation: rotate 36s linear infinite;
+        animation: rotate 45s linear infinite;
         border-radius: 50%;
       }
       @keyframes rotate {
@@ -36,18 +36,19 @@
       }
 
       h1 {
-        color: #d39a00;
         font-size: 30px;
         font-family: 'Berkshire Swash', cursive;
-        text-shadow: 1px 1px #ff820038;
-        margin: 0;
+        text-shadow: 2px 2px #ffdf7269;
+        margin: 19px 0;
       }
 
       #page {
-        background: radial-gradient(circle at center, #f7f3ea 37%, #f8e4ab 73%);
+        background: radial-gradient(circle at center, #fff7dd 33%, #101010 81%);
         display: flex;
         justify-content: center;
         height: 100%;
+        position: relative;
+        overflow: hidden;
       }
 
       #content {
@@ -58,12 +59,12 @@
         flex: 1;
         max-width: 362px;
         margin: 25px;
+        color: #101010;
       }
 
       p {
         font-family: 'Arvo';
-        color: #d39a00;
-        margin-top: 6px;
+        margin: 6px 0;
       }
 
       .radio-controls {
@@ -150,7 +151,7 @@
 
         document.getElementById("channel-up").innerHTML = channelButtons[channelUp];
         document.getElementById("channel-down").innerHTML = channelButtons[channelDown];
-        document.getElementById("page").style.background = `radial-gradient(circle at center, #f7f3ea 37%, ${channelColors[currentChannel]} 73%)`;
+        document.getElementById("page").style.background = `radial-gradient(circle at center, #f7f3ea 33%, ${channelColors[currentChannel]} 81%)`;
         document.getElementById("sunburst").style.background = `repeating-conic-gradient( #9c27b000 0 0deg, ${channelColorsTransparent[currentChannel]} 1deg 1deg , #9c27b000 2deg 3deg)`;
         play();
       }
