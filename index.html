@@ -8,8 +8,6 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Arvo&display=swap');
-
       body {
         margin: 0;
       }
@@ -34,13 +32,12 @@
 
       h1 {
         font-size: 30px;
-        font-family: 'Berkshire Swash', cursive;
-        text-shadow: 2px 2px #ffdf7269;
         margin: 19px 0;
       }
 
       #page {
         background: radial-gradient(circle at center, #fff7dd 33%, #101010 81%);
+        background: #fff7dd;
         display: flex;
         justify-content: center;
         height: 100%;
@@ -60,7 +57,6 @@
       }
 
       p {
-        font-family: 'Arvo';
         margin: 6px 0;
       }
 
@@ -78,30 +74,34 @@
         box-shadow: 0px 1px 6px #efae00; */
       }
       .radio-control:hover {cursor: pointer;}
+      #play, #pause { width: 18px; }
     </style>
   </head>
 
   <body>
+    <audio id='channel1' src='https://filesamples.com/samples/audio/mp3/sample1.mp3'></audio>
+    <audio id='channel2' src='https://filesamples.com/samples/audio/mp3/sample2.mp3'></audio>
+    <audio id='channel3' src='https://filesamples.com/samples/audio/mp3/sample3.mp3'></audio>
+
     <div id='page'>
       <div id='sunburst'></div>
       <div id='content'>
         <h1>BackTogether.FM</h1>
         <p>
           A public silent disco with your own earphones.
-          Made by <a href='https://github.com/rubyonrials' target='_blank'>Matt</a>.
+          <a href='https://github.com/rubyonrials/backtogetherfm' target='_blank'>Info</a>.
         </p>
 
         <div class='radio-controls'>
-          <div id='channel-up' class='radio-control' style='visibility:hidden;'></div>
-          <div id='play' class='radio-control'>▶️</div>
-          <div id='pause' class='radio-control' style='display:none;'>⏸</div>
-          <div id='channel-down' class='radio-control' style='visibility:hidden;'></div>
+          <div id='channel-up' class='radio-control' style='visibility:hidden;'>⏮︎</div>
+          <div id='play' class='radio-control'>⏵︎</div>
+          <div id='pause' class='radio-control' style='display:none;'>⏸︎</div>
+          <div id='channel-down' class='radio-control' style='visibility:hidden;'>⏭︎</div>
         </div>
       </div>
     </div>
 
     <script>
-      const channelButtons = [null,'🔴','🟢','🔵'];
       const channelColors = [null, '#dc322fba', '#429900ba', '#268bd2ba'];
       const channelColorsTransparent = [null, '#dc322f36', '#45ff0036', '#268bd236'];
       const channelDirectory = [null, 'red', 'green', 'blue'];
@@ -114,14 +114,15 @@
         document.getElementById("channel-up").style.visibility = 'visible';
         document.getElementById("channel-down").style.visibility = 'visible';
 
-        /* audio.play(); */
+        audio.play();
       }
 
       function pause() {
         document.getElementById("pause").style.display = 'none';
         document.getElementById("play").style.display = 'block';
+        document.getElementById("sunburst").style.background = 'none';
 
-        /* audio.pause(); */
+        audio.pause();
       }
 
       function changeChannel(channel) {
@@ -135,6 +136,8 @@
           audio = new Audio(`audio-source/${channelDirectory[currentChannel]}/1.mp3`);
         } */
 
+        audio = document.getElementById(`channel${currentChannel}`);
+
         if (currentChannel == 1) {
           channelUp = 2;
           channelDown = 3;
@@ -146,8 +149,8 @@
           channelDown = 2;
         }
 
-        document.getElementById("channel-up").innerHTML = channelButtons[channelUp];
-        document.getElementById("channel-down").innerHTML = channelButtons[channelDown];
+        document.getElementById("channel-up").style.color = channelColors[channelUp];
+        document.getElementById("channel-down").style.color = channelColors[channelDown];
         document.getElementById("page").style.background = `radial-gradient(circle at center, #f7f3ea 33%, ${channelColors[currentChannel]} 81%)`;
         document.getElementById("sunburst").style.background = `repeating-conic-gradient( #9c27b000 0 0deg, ${channelColorsTransparent[currentChannel]} 1deg 1deg , #9c27b000 2deg 3deg)`;
         play();
@@ -158,5 +161,25 @@
       document.getElementById("channel-up").addEventListener("click", () => changeChannel(channelUp));
       document.getElementById("channel-down").addEventListener("click", () => changeChannel(channelDown));
     </script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script> -->
+<!-- <video id="video"></video> -->
+<!-- <script> -->
+<!--   var video = document.getElementById('video'); -->
+<!--   var videoSrc = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'; -->
+<!--   // -->
+<!--   // First check for native browser HLS support -->
+<!--   // -->
+<!--   if (video.canPlayType('application/vnd.apple.mpegurl')) { -->
+<!--     video.src = videoSrc; -->
+<!--     // -->
+<!--     // If no native HLS support, check if HLS.js is supported -->
+<!--     // -->
+<!--   } else if (Hls.isSupported()) { -->
+<!--     var hls = new Hls(); -->
+<!--     hls.loadSource(videoSrc); -->
+<!--     hls.attachMedia(video); -->
+<!--   } -->
+<!-- </script> -->
   </body>
 </html>
