@@ -5,22 +5,28 @@
 
 <html>
   <head>
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
       body {
         margin: 0;
       }
 
-      #sunburst {
+      #sunburst, #sunburst2 {
         position: absolute;
         width: 150vmax;
         height: 150vmax;
         top: -30vmax;
-        z-index: -1;
-        animation: rotate 45s cubic-bezier(0.42, 0.3, 0.58, 0.7) infinite;
         border-radius: 50%;
       }
+      #sunburst {
+        animation: rotate 60s cubic-bezier(0.42, 0.3, 0.58, 0.7) infinite;
+        z-index: -1;
+      }
+      #sunburst2 {
+        animation: rotate 45s cubic-bezier(0.42, 0.3, 0.58, 0.7) infinite;
+        z-index: -2;
+      }
+
       @keyframes rotate {
         from {
           transform: rotate(0deg);
@@ -31,8 +37,10 @@
       }
 
       h1 {
-        font-size: 30px;
-        margin: 19px 0;
+        font-size: 27px;
+        font-family: monospace;
+        margin: 19px 0 0;
+        letter-spacing: 2px;
       }
 
       #page {
@@ -70,8 +78,6 @@
         padding: 25px;
         margin: 0 15px;
         user-select: none;
-        /* border-radius: 50%;
-        box-shadow: 0px 1px 6px #efae00; */
       }
       .radio-control:hover {cursor: pointer;}
       #play, #pause { width: 18px; }
@@ -79,16 +85,13 @@
   </head>
 
   <body>
-    <audio id='channel1' src='https://filesamples.com/samples/audio/mp3/sample1.mp3'></audio>
-    <audio id='channel2' src='https://filesamples.com/samples/audio/mp3/sample2.mp3'></audio>
-    <audio id='channel3' src='https://filesamples.com/samples/audio/mp3/sample3.mp3'></audio>
-
     <div id='page'>
       <div id='sunburst'></div>
+      <div id='sunburst2'></div>
       <div id='content'>
         <h1>BackTogether.FM</h1>
         <p>
-          A public silent disco with your own earphones.
+          Public silent disco with your own earphones.
           <a href='https://github.com/rubyonrials/backtogetherfm' target='_blank'>Info</a>.
         </p>
 
@@ -101,85 +104,6 @@
       </div>
     </div>
 
-    <script>
-      const channelColors = [null, '#dc322fba', '#429900ba', '#268bd2ba'];
-      const channelColorsTransparent = [null, '#dc322f36', '#45ff0036', '#268bd236'];
-      const channelDirectory = [null, 'red', 'green', 'blue'];
-      var currentChannel = Math.floor(Math.random() * 3) + 1;
-      var channelUp, channelDown, audio;
-
-      function play() {
-        document.getElementById("play").style.display = 'none';
-        document.getElementById("pause").style.display = 'block';
-        document.getElementById("channel-up").style.visibility = 'visible';
-        document.getElementById("channel-down").style.visibility = 'visible';
-
-        audio.play();
-      }
-
-      function pause() {
-        document.getElementById("pause").style.display = 'none';
-        document.getElementById("play").style.display = 'block';
-        document.getElementById("sunburst").style.background = 'none';
-
-        audio.pause();
-      }
-
-      function changeChannel(channel) {
-        if (currentChannel !== channel) {
-          currentChannel = channel;
-          /* if (audio) { audio.pause(); }
-          audio = new Audio(`audio-source/${channelDirectory[currentChannel]}/1.mp3`); */
-        }
-
-        /* if (!audio) {
-          audio = new Audio(`audio-source/${channelDirectory[currentChannel]}/1.mp3`);
-        } */
-
-        audio = document.getElementById(`channel${currentChannel}`);
-
-        if (currentChannel == 1) {
-          channelUp = 2;
-          channelDown = 3;
-        } else if (currentChannel == 2) {
-          channelUp = 3;
-          channelDown = 1;
-        } else {
-          channelUp = 1;
-          channelDown = 2;
-        }
-
-        document.getElementById("channel-up").style.color = channelColors[channelUp];
-        document.getElementById("channel-down").style.color = channelColors[channelDown];
-        document.getElementById("page").style.background = `radial-gradient(circle at center, #f7f3ea 33%, ${channelColors[currentChannel]} 81%)`;
-        document.getElementById("sunburst").style.background = `repeating-conic-gradient( #9c27b000 0 0deg, ${channelColorsTransparent[currentChannel]} 1deg 1deg , #9c27b000 2deg 3deg)`;
-        play();
-      }
-
-      document.getElementById("play").addEventListener("click", () => changeChannel(currentChannel));
-      document.getElementById("pause").addEventListener("click", pause);
-      document.getElementById("channel-up").addEventListener("click", () => changeChannel(channelUp));
-      document.getElementById("channel-down").addEventListener("click", () => changeChannel(channelDown));
-    </script>
-
-<!-- <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script> -->
-<!-- <video id="video"></video> -->
-<!-- <script> -->
-<!--   var video = document.getElementById('video'); -->
-<!--   var videoSrc = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'; -->
-<!--   // -->
-<!--   // First check for native browser HLS support -->
-<!--   // -->
-<!--   if (video.canPlayType('application/vnd.apple.mpegurl')) { -->
-<!--     video.src = videoSrc; -->
-<!--     // -->
-<!--     // If no native HLS support, check if HLS.js is supported -->
-<!--     // -->
-<!--   } else if (Hls.isSupported()) { -->
-<!--     var hls = new Hls(); -->
-<!--     hls.loadSource(videoSrc); -->
-<!--     hls.attachMedia(video); -->
-<!--   } -->
-<!-- </script> -->
+    <script type="module" src="client.js"></script>
   </body>
 </html>

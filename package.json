@@ -1,0 +1,25 @@
+{
+  "name": "backtogetherfm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lk-client.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rubyonrials/backtogetherfm.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rubyonrials/backtogetherfm/issues"
+  },
+  "homepage": "https://github.com/rubyonrials/backtogetherfm#readme",
+  "dependencies": {
+    "livekit-client": "^1.6.2"
+  },
+  "devDependencies": {
+    "parcel": "^2.8.2"
+  }
+}
