@@ -1,12 +1,16 @@
 const livekit = require('livekit-client');
+const tokenServerURI = 'https://3b9e-157-131-123-98.ngrok.io';
+const webrtcURI = 'wss://a291-157-131-123-98.ngrok.io';
 
-function handleTrackSubscribed(track, publication, participant) {
+function handleTrackSubscribed(channel, track, publication, participant) {
   if (track.kind === livekit.Track.Kind.Audio) {
     // attach it to a new HTMLAudioElement
     const element = track.attach();
-    // element.setAttribute('
-    element.muted = true;
+    element.setAttribute('id', `${channel}Audio`);
+    element.muted = true; // only if not current channel?? 
     document.getElementById("page").appendChild(element);
+    // console.log('channel??');
+    // console.log(channel);
   }
 }
 
@@ -24,13 +28,21 @@ function handleDisconnect() {
   console.log('disconnected from room');
 }
 
-const lkroom = new livekit.Room({
-  adaptiveStream: true,
-  dynacast: true
-});
-
-lkroom
-  .on(livekit.RoomEvent.TrackSubscribed, handleTrackSubscribed)
+const redChannel = new livekit.Room({ adaptiveStream: true, dynacast: true });
+const blueChannel = new livekit.Room({ adaptiveStream: true, dynacast: true });
+const greenChannel = new livekit.Room({ adaptiveStream: true, dynacast: true });
+redChannel
+  .on(livekit.RoomEvent.TrackSubscribed, (track, publication, participant) => handleTrackSubscribed('red', track, publication, participant))
+  .on(livekit.RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
+  .on(livekit.RoomEvent.Disconnected, handleDisconnect)
+  .on(livekit.RoomEvent.LocalTrackUnpublished, handleLocalTrackUnpublished);
+blueChannel
+  .on(livekit.RoomEvent.TrackSubscribed, (track, publication, participant) => handleTrackSubscribed('blue', track, publication, participant))
+  .on(livekit.RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
+  .on(livekit.RoomEvent.Disconnected, handleDisconnect)
+  .on(livekit.RoomEvent.LocalTrackUnpublished, handleLocalTrackUnpublished);
+greenChannel
+  .on(livekit.RoomEvent.TrackSubscribed, (track, publication, participant) => handleTrackSubscribed('green', track, publication, participant))
   .on(livekit.RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
   .on(livekit.RoomEvent.Disconnected, handleDisconnect)
   .on(livekit.RoomEvent.LocalTrackUnpublished, handleLocalTrackUnpublished);
@@ -48,12 +60,15 @@ function pause() {
   document.getElementById("sunburst").style.background = 'none';
   document.getElementById("sunburst2").style.background = 'none';
 
-  lkroom.disconnect();
+  // lkroom.disconnect();
+    document.getElementById("redAudio").pause();
+    document.getElementById("blueAudio").pause();
+    document.getElementById("greenAudio").pause();
 }
 
 async function changeChannel(channel) {
   if (currentChannel !== channel) {
-    lkroom.disconnect();
+    // lkroom.disconnect();
     currentChannel = channel;
   }
 
@@ -79,12 +94,24 @@ async function changeChannel(channel) {
   document.getElementById("channel-up").style.visibility = 'visible';
   document.getElementById("channel-down").style.visibility = 'visible';
 
-  await lkroom.connect('wss://a291-157-131-123-98.ngrok.io', channelTokens[channelDirectory[currentChannel]]);
-  await lkroom.startAudio();
+    document.getElementById("redAudio").pause();
+    document.getElementById("blueAudio").pause();
+    document.getElementById("greenAudio").pause();
+
+    // document.getElementById("redAudio").play();
+    
+  // await lkroom.connect('wss://a291-157-131-123-98.ngrok.io', channelTokens[channelDirectory[currentChannel]]);
+  if (currentChannel == 1) {
+  await redChannel.startAudio();
+  } else if (currentChannel == 2) {
+    await greenChannel.startAudio();
+  } else {
+    await blueChannel.startAudio();
+  }
 }
 
 async function init() {
-  const response = await fetch('https://3b9e-157-131-123-98.ngrok.io/issue-tokens',
+  const response = await fetch(`${tokenServerURI}/issue-tokens`,
     {
       method: 'GET',
       headers: new Headers({ "ngrok-skip-browser-warning": "69420" })
@@ -98,13 +125,14 @@ async function init() {
     });
 
   channelTokens = response;
+
+  const redConnect = redChannel.connect(webrtcURI, channelTokens['red']);
+  const blueConnect = blueChannel.connect(webrtcURI, channelTokens['blue']);
+  const greenConnect =  greenChannel.connect(webrtcURI, channelTokens['green']);
+  await Promise.all([redConnect, blueConnect, greenConnect]);
+
   document.getElementById("loading").style.display = 'none';
   document.getElementById("play").style.display = 'block';
-
-  await lkroom.connect('wss://a291-157-131-123-98.ngrok.io', channelTokens[channelDirectory[currentChannel]]);
-  // await lkroom.connect('wss://a291-157-131-123-98.ngrok.io', channelTokens[channelDirectory[2]]);
-  // await lkroom.connect('wss://a291-157-131-123-98.ngrok.io', channelTokens[channelDirectory[3]]);
-
   document.getElementById("play").addEventListener("click", () => changeChannel(currentChannel));
   document.getElementById("pause").addEventListener("click", pause);
   document.getElementById("channel-up").addEventListener("click", () => changeChannel(channelUp));
