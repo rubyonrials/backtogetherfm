@@ -1,9 +1,11 @@
 const livekit = require('livekit-client');
 
 function handleTrackSubscribed(track, publication, participant) {
-  if (track.kind === livekit.Track.Kind.Video || track.kind === livekit.Track.Kind.Audio) {
-    // attach it to a new HTMLVideoElement or HTMLAudioElement
+  if (track.kind === livekit.Track.Kind.Audio) {
+    // attach it to a new HTMLAudioElement
     const element = track.attach();
+    // element.setAttribute('
+    element.muted = true;
     document.getElementById("page").appendChild(element);
   }
 }
@@ -22,9 +24,6 @@ function handleDisconnect() {
   console.log('disconnected from room');
 }
 
-const response = await fetch('localhost:8080/issue-tokens', {
-    method: 'GET' });
-
 const lkroom = new livekit.Room({
   adaptiveStream: true,
   dynacast: true
@@ -39,8 +38,7 @@ lkroom
 const channelColors = [null, '#dc322fba', '#429900ba', '#268bd2ba'];
 const channelColorsTransparent = [null, '#dc322f42', '#45ff0042', '#268bd242'];
 const channelDirectory = [null, 'red', 'green', 'blue'];
-const channelTokens = [null, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzM0ODY3NzIsImlzcyI6ImRldmtleSIsIm5hbWUiOiJtb2JpbGUiLCJuYmYiOjE2NzM0MDAzNzIsInN1YiI6Im1vYmlsZSIsInZpZGVvIjp7InJvb20iOiJyZWQiLCJyb29tSm9pbiI6dHJ1ZX19.1_iBdk9fQttl-aM69UVt_ccj3eSAGk4qgWuyC_CtXM4', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzM0OTEzODMsImlzcyI6ImRldmtleSIsIm5hbWUiOiJtb2JpbGUiLCJuYmYiOjE2NzM0MDQ5ODMsInN1YiI6Im1vYmlsZSIsInZpZGVvIjp7InJvb20iOiJncmVlbiIsInJvb21Kb2luIjp0cnVlfX0.CoL5TIiI9Q_JuOmYUdBPI5NIIAj43DlPtzVl23B-XWU', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzM0OTEzMzYsImlzcyI6ImRldmtleSIsIm5hbWUiOiJtb2JpbGUiLCJuYmYiOjE2NzM0MDQ5MzYsInN1YiI6Im1vYmlsZSIsInZpZGVvIjp7InJvb20iOiJibHVlIiwicm9vbUpvaW4iOnRydWV9fQ.B_SNLYiwKxUal9yNa2uYcPgQNcx_ObPpLSwIMzCGLKo'];
-// i think the server needs to generate these tokens on the fly, one per user, per room
+var channelTokens;
 var currentChannel = Math.floor(Math.random() * 3) + 1;
 var channelUp, channelDown, audio;
 
@@ -53,7 +51,7 @@ function pause() {
   lkroom.disconnect();
 }
 
-function changeChannel(channel) {
+async function changeChannel(channel) {
   if (currentChannel !== channel) {
     lkroom.disconnect();
     currentChannel = channel;
@@ -81,10 +79,35 @@ function changeChannel(channel) {
   document.getElementById("channel-up").style.visibility = 'visible';
   document.getElementById("channel-down").style.visibility = 'visible';
 
-  lkroom.connect('ws://localhost:7880', channelTokens[currentChannel]);
+  await lkroom.connect('wss://a291-157-131-123-98.ngrok.io', channelTokens[channelDirectory[currentChannel]]);
+  await lkroom.startAudio();
 }
 
-document.getElementById("play").addEventListener("click", () => changeChannel(currentChannel));
-document.getElementById("pause").addEventListener("click", pause);
-document.getElementById("channel-up").addEventListener("click", () => changeChannel(channelUp));
-document.getElementById("channel-down").addEventListener("click", () => changeChannel(channelDown));
+async function init() {
+  const response = await fetch('https://3b9e-157-131-123-98.ngrok.io/issue-tokens',
+    {
+      method: 'GET',
+      headers: new Headers({ "ngrok-skip-browser-warning": "69420" })
+    }
+  )
+    .then(response => response.json())
+    .catch(error => {
+      document.getElementById("loading").innerHTML = 'Connection failed.';
+      document.getElementById("loading").style.color = 'red';
+      throw new Error('BackTogether.FM encountered an error. Please contact Matt.')
+    });
+
+  channelTokens = response;
+  document.getElementById("loading").style.display = 'none';
+  document.getElementById("play").style.display = 'block';
+
+  await lkroom.connect('wss://a291-157-131-123-98.ngrok.io', channelTokens[channelDirectory[currentChannel]]);
+  // await lkroom.connect('wss://a291-157-131-123-98.ngrok.io', channelTokens[channelDirectory[2]]);
+  // await lkroom.connect('wss://a291-157-131-123-98.ngrok.io', channelTokens[channelDirectory[3]]);
+
+  document.getElementById("play").addEventListener("click", () => changeChannel(currentChannel));
+  document.getElementById("pause").addEventListener("click", pause);
+  document.getElementById("channel-up").addEventListener("click", () => changeChannel(channelUp));
+  document.getElementById("channel-down").addEventListener("click", () => changeChannel(channelDown));
+}
+init();

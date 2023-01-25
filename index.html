@@ -37,7 +37,7 @@
       }
 
       h1 {
-        font-size: 27px;
+        font-size: 23px;
         font-family: monospace;
         margin: 19px 0 0;
         letter-spacing: 2px;
@@ -65,7 +65,12 @@
       }
 
       p {
-        margin: 6px 0;
+        margin: 3px 0;
+      }
+
+      a {
+        font-size: 14px;
+        text-decoration: none;
       }
 
       .radio-controls {
@@ -81,6 +86,7 @@
       }
       .radio-control:hover {cursor: pointer;}
       #play, #pause { width: 18px; }
+      #loading { margin: auto; }
     </style>
   </head>
 
@@ -92,12 +98,14 @@
         <h1>BackTogether.FM</h1>
         <p>
           Public silent disco with your own earphones.
-          <a href='https://github.com/rubyonrials/backtogetherfm' target='_blank'>Info</a>.
+          <a href='https://github.com/rubyonrials/backtogetherfm' target='_blank'>&#9432;</a>
         </p>
+        <p id="debug"></p>
 
         <div class='radio-controls'>
           <div id='channel-up' class='radio-control' style='visibility:hidden;'>⏮︎</div>
-          <div id='play' class='radio-control'>⏵︎</div>
+          <p id='loading'>Connecting...</p>
+          <div id='play' class='radio-control' style='display:none;'>⏵︎</div>
           <div id='pause' class='radio-control' style='display:none;'>⏸︎</div>
           <div id='channel-down' class='radio-control' style='visibility:hidden;'>⏭︎</div>
         </div>
