@@ -27,20 +27,55 @@ const channelDirectory = [null, 'red', 'green', 'blue'];
 var currentChannel = Math.floor(Math.random() * 3) + 1;
 var channelUp, channelDown, audio;
 
+var livekitCache = {
+  'red': {
+    'track': null,
+    'publication': null,
+  },
+  'blue': {
+    'track': null,
+    'publication': null,
+  },
+  'green': {
+    'track': null,
+    'publication': null,
+  }
+}
+
+function removeExistingAudio() {
+  const existingAudio = document.getElementById('livekit-audio');
+  if (existingAudio) { existingAudio.remove() };
+}
+
+function pauseCurrentAudio() {
+  removeExistingAudio();
+  channelCache = livekitCache[channelDirectory[currentChannel]];
+  channelCache['publication'].setEnabled(false);
+}
+
+function playAudio(track) {
+  removeExistingAudio();
+  const newChannelAudio = track.attach();
+  newChannelAudio.setAttribute('id', 'livekit-audio');
+  document.body.appendChild(newChannelAudio);
+}
+
 function handleTrackSubscribed(channel, track, publication, participant) {
   if (track.kind !== livekit.Track.Kind.Audio) return;
 
-  const existingChannelAudio = document.getElementById(`${channel}Audio`);
-  if (existingChannelAudio) {
-    document.getElementById("page").removeChild(existingChannelAudio);
-  }
+  livekitCache[channel]['track'] = track;
+  livekitCache[channel]['publication'] = publication;
 
-  const newChannelAudio = track.attach();
-  newChannelAudio.setAttribute('id', `${channel}Audio`);
-  if (channel !== channelDirectory[currentChannel]) {
-    newChannelAudio.muted = true;
+  if (channel === channelDirectory[currentChannel]) {
+    // If track is published to current channel, remove and attach (livekit will recyle the audio element)
+    playAudio(track);
+  } else {
+    // if track is NOT in the current channel, add it to the cache of channel-track(s) to play, and set publication.setEnabled(false).
+    // when changing the channel, subscribe to the latest channel-track, and publication.setEnabled(true)
+    publication.setEnabled(false);
+    console.log('cache');
+    console.log(livekitCache);
   }
-  document.getElementById("page").appendChild(newChannelAudio);
 }
 
 function handleTrackUnsubscribed(track, publication, participant) {
@@ -55,20 +90,17 @@ function handleDisconnect() {
   console.log('disconnected from room');
 }
 
-function muteCurrentChannel() {
-  const currentChannelAudio = document.getElementById(`${channelDirectory[currentChannel]}Audio`)
-  currentChannelAudio.muted = true;
-  currentChannelAudio.pause();
-}
-
-async function playCurrentChannel() {
-  if (currentChannel == 1) {
-    await redChannel.startAudio();
-  } else if (currentChannel == 2) {
-    await greenChannel.startAudio();
-  } else {
-    await blueChannel.startAudio();
-  }
+function playCurrentChannel() {
+  channelCache = livekitCache[channelDirectory[currentChannel]];
+  channelCache['publication'].setEnabled(true);
+  playAudio(channelCache['track']);
+  // if (currentChannel == 1) {
+  //   await redChannel.startAudio();
+  // } else if (currentChannel == 2) {
+  //   await greenChannel.startAudio();
+  // } else {
+  //   await blueChannel.startAudio();
+  // }
 }
 
 function pause() {
@@ -77,12 +109,12 @@ function pause() {
   document.getElementById("sunburst").style.background = 'none';
   document.getElementById("sunburst2").style.background = 'none';
 
-  muteCurrentChannel();
+  pauseCurrentAudio();
 }
 
 async function changeChannel(channel) {
   if (currentChannel !== channel) {
-    muteCurrentChannel();
+    pauseCurrentAudio();
     currentChannel = channel;
   }
 
