@@ -2,32 +2,6 @@ const livekit = require('livekit-client');
 const tokenServerURI = 'https://3b9e-157-131-123-98.ngrok.io';
 const webrtcURI = 'wss://a291-157-131-123-98.ngrok.io';
 
-function handleTrackSubscribed(channel, track, publication, participant) {
-  if (track.kind === livekit.Track.Kind.Audio) {
-    // attach it to a new HTMLAudioElement
-    const element = track.attach();
-    element.setAttribute('id', `${channel}Audio`);
-    element.muted = true; // only if not current channel?? 
-    document.getElementById("page").appendChild(element);
-    // console.log('channel??');
-    // console.log(channel);
-  }
-}
-
-function handleTrackUnsubscribed(track, publication, participant) {
-  // remove tracks from all attached elements
-  track.detach();
-}
-
-function handleLocalTrackUnpublished(track, participant) {
-  // when local tracks are ended, update UI to remove them from rendering
-  track.detach();
-}
-
-function handleDisconnect() {
-  console.log('disconnected from room');
-}
-
 const redChannel = new livekit.Room({ adaptiveStream: true, dynacast: true });
 const blueChannel = new livekit.Room({ adaptiveStream: true, dynacast: true });
 const greenChannel = new livekit.Room({ adaptiveStream: true, dynacast: true });
@@ -50,9 +24,52 @@ greenChannel
 const channelColors = [null, '#dc322fba', '#429900ba', '#268bd2ba'];
 const channelColorsTransparent = [null, '#dc322f42', '#45ff0042', '#268bd242'];
 const channelDirectory = [null, 'red', 'green', 'blue'];
-var channelTokens;
 var currentChannel = Math.floor(Math.random() * 3) + 1;
 var channelUp, channelDown, audio;
+
+function handleTrackSubscribed(channel, track, publication, participant) {
+  if (track.kind !== livekit.Track.Kind.Audio) return;
+
+  const existingChannelAudio = document.getElementById(`${channel}Audio`);
+  if (existingChannelAudio) {
+    document.getElementById("page").removeChild(existingChannelAudio);
+  }
+
+  const newChannelAudio = track.attach();
+  newChannelAudio.setAttribute('id', `${channel}Audio`);
+  if (channel !== channelDirectory[currentChannel]) {
+    newChannelAudio.muted = true;
+  }
+  document.getElementById("page").appendChild(newChannelAudio);
+}
+
+function handleTrackUnsubscribed(track, publication, participant) {
+  track.detach();
+}
+
+function handleLocalTrackUnpublished(track, participant) {
+  track.detach();
+}
+
+function handleDisconnect() {
+  console.log('disconnected from room');
+}
+
+function muteCurrentChannel() {
+  const currentChannelAudio = document.getElementById(`${channelDirectory[currentChannel]}Audio`)
+  currentChannelAudio.muted = true;
+  currentChannelAudio.pause();
+}
+
+async function playCurrentChannel() {
+  if (currentChannel == 1) {
+    await redChannel.startAudio();
+  } else if (currentChannel == 2) {
+    await greenChannel.startAudio();
+  } else {
+    await blueChannel.startAudio();
+  }
+}
 
 function pause() {
   document.getElementById("pause").style.display = 'none';
@@ -60,15 +77,12 @@ function pause() {
   document.getElementById("sunburst").style.background = 'none';
   document.getElementById("sunburst2").style.background = 'none';
 
-  // lkroom.disconnect();
-    document.getElementById("redAudio").pause();
-    document.getElementById("blueAudio").pause();
-    document.getElementById("greenAudio").pause();
+  muteCurrentChannel();
 }
 
 async function changeChannel(channel) {
   if (currentChannel !== channel) {
-    // lkroom.disconnect();
+    muteCurrentChannel();
     currentChannel = channel;
   }
 
@@ -94,20 +108,7 @@ async function changeChannel(channel) {
   document.getElementById("channel-up").style.visibility = 'visible';
   document.getElementById("channel-down").style.visibility = 'visible';
 
-    document.getElementById("redAudio").pause();
-    document.getElementById("blueAudio").pause();
-    document.getElementById("greenAudio").pause();
-
-    // document.getElementById("redAudio").play();
-    
-  // await lkroom.connect('wss://a291-157-131-123-98.ngrok.io', channelTokens[channelDirectory[currentChannel]]);
-  if (currentChannel == 1) {
-  await redChannel.startAudio();
-  } else if (currentChannel == 2) {
-    await greenChannel.startAudio();
-  } else {
-    await blueChannel.startAudio();
-  }
+  playCurrentChannel();
 }
 
 async function init() {
@@ -124,11 +125,9 @@ async function init() {
       throw new Error('BackTogether.FM encountered an error. Please contact Matt.')
     });
 
-  channelTokens = response;
-
-  const redConnect = redChannel.connect(webrtcURI, channelTokens['red']);
-  const blueConnect = blueChannel.connect(webrtcURI, channelTokens['blue']);
-  const greenConnect =  greenChannel.connect(webrtcURI, channelTokens['green']);
+  const redConnect = redChannel.connect(webrtcURI, response['red']);
+  const blueConnect = blueChannel.connect(webrtcURI, response['blue']);
+  const greenConnect =  greenChannel.connect(webrtcURI, response['green']);
   await Promise.all([redConnect, blueConnect, greenConnect]);
 
   document.getElementById("loading").style.display = 'none';
