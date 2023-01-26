@@ -18,11 +18,18 @@ var channelUp, channelDown, audio;
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 var connectOnLoad = isSafari;
 
+function removeExistingAudio() {
+  const existingAudio = document.getElementById("livekit-audio");
+  if ( existingAudio ) { existingAudio.remove(); }
+}
+
 function handleTrackSubscribed(track, publication, participant) {
   if (track.kind !== livekit.Track.Kind.Audio) return;
+
+  removeExistingAudio();
   const element = track.attach();
-  // if (connectOnLoad) { element.muted = true }
-  document.getElementById("page").appendChild(element);
+  element.setAttribute('id', 'livekit-audio');
+  document.body.appendChild(element);
 }
 
 function handleTrackUnsubscribed(track, publication, participant) {
@@ -41,11 +48,13 @@ function pause() {
   document.getElementById("sunburst").style.background = 'none';
   document.getElementById("sunburst2").style.background = 'none';
 
+  removeExistingAudio();
   lkroom.disconnect();
 }
 
 async function changeChannel(channel) {
   if (currentChannel !== channel) {
+    removeExistingAudio();
     lkroom.disconnect();
     currentChannel = channel;
   }
