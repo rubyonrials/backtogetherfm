@@ -1,6 +1,12 @@
+// Multiple issues right now.
+// 1. phone can't connect to webrtc server for some reason, even after stashing all changes from last time it was working
+// 2. if any channel doesn't have any tracks on it, livekitCache breaks
+// 3. occassionally parcel's auto-reload keeps playing a track even though it shouldn't (could be specific to parcel)
+// 4. i should really transition to a deployed environment to get rid of ngrok issues...
 const livekit = require('livekit-client');
+
 const tokenServerURI = 'https://3b9e-157-131-123-98.ngrok.io';
-const webrtcURI = 'wss://a291-157-131-123-98.ngrok.io';
+const webrtcURI = 'wss://backtogetherfm.livekit.cloud';
 
 const redChannel = new livekit.Room({ adaptiveStream: true, dynacast: true });
 const blueChannel = new livekit.Room({ adaptiveStream: true, dynacast: true });
@@ -21,11 +27,12 @@ greenChannel
   .on(livekit.RoomEvent.Disconnected, handleDisconnect)
   .on(livekit.RoomEvent.LocalTrackUnpublished, handleLocalTrackUnpublished);
 
-const channelColors = [null, '#dc322fba', '#429900ba', '#268bd2ba'];
-const channelColorsTransparent = [null, '#dc322f42', '#45ff0042', '#268bd242'];
-const channelDirectory = [null, 'red', 'green', 'blue'];
+const channelColors = ['#ffb100ba', '#dc322fba', '#429900ba', '#268bd2ba'];
+const channelColorsTransparent = ['#ffb10042', '#dc322f42', '#45ff0042', '#268bd242'];
+const channelDirectory = ['yellow', 'red', 'green', 'blue'];
 var currentChannel = Math.floor(Math.random() * 3) + 1;
-var channelUp, channelDown, audio;
+// var currentChannel = 0;
+var channelUp, channelDown;
 
 var livekitCache = {
   'red': {
@@ -49,6 +56,7 @@ function removeExistingAudio() {
 
 function pauseCurrentAudio() {
   removeExistingAudio();
+  // document.getElementById('debug').innerHTML = JSON.stringify(livekitCache);
   channelCache = livekitCache[channelDirectory[currentChannel]];
   channelCache['publication'].setEnabled(false);
 }
@@ -57,6 +65,8 @@ function playAudio(track) {
   removeExistingAudio();
   const newChannelAudio = track.attach();
   newChannelAudio.setAttribute('id', 'livekit-audio');
+  newChannelAudio.setAttribute('title', 'BackTogether.FM');
+  newChannelAudio.removeAttribute('autoplay');
   document.body.appendChild(newChannelAudio);
 }
 
@@ -73,8 +83,6 @@ function handleTrackSubscribed(channel, track, publication, participant) {
     // if track is NOT in the current channel, add it to the cache of channel-track(s) to play, and set publication.setEnabled(false).
     // when changing the channel, subscribe to the latest channel-track, and publication.setEnabled(true)
     publication.setEnabled(false);
-    console.log('cache');
-    console.log(livekitCache);
   }
 }
 
@@ -91,16 +99,12 @@ function handleDisconnect() {
 }
 
 function playCurrentChannel() {
+  // document.getElementById('debug').innerHTML = JSON.stringify(livekitCache);
   channelCache = livekitCache[channelDirectory[currentChannel]];
+  // Need to handle the case where one or more channels is not publishing audio!
+
   channelCache['publication'].setEnabled(true);
   playAudio(channelCache['track']);
-  // if (currentChannel == 1) {
-  //   await redChannel.startAudio();
-  // } else if (currentChannel == 2) {
-  //   await greenChannel.startAudio();
-  // } else {
-  //   await blueChannel.startAudio();
-  // }
 }
 
 function pause() {
@@ -143,6 +147,14 @@ async function changeChannel(channel) {
   playCurrentChannel();
 }
 
+function throwError(error, customMessage) {
+  const fullErrorMessage = `${customMessage}\n\n ${error}`;
+  document.getElementById("loading").innerHTML = fullErrorMessage;
+  document.getElementById("loading").style.color = 'red';
+  document.getElementById("loading").classList.remove('blinking');
+  throw new Error(fullErrorMessage);
+}
+
 async function init() {
   const response = await fetch(`${tokenServerURI}/issue-tokens`,
     {
@@ -151,16 +163,13 @@ async function init() {
     }
   )
     .then(response => response.json())
-    .catch(error => {
-      document.getElementById("loading").innerHTML = 'Connection failed.';
-      document.getElementById("loading").style.color = 'red';
-      throw new Error('BackTogether.FM encountered an error. Please contact Matt.')
-    });
+    .catch(error => throwError(error, 'Connection failed (code 1).'));
 
   const redConnect = redChannel.connect(webrtcURI, response['red']);
   const blueConnect = blueChannel.connect(webrtcURI, response['blue']);
   const greenConnect =  greenChannel.connect(webrtcURI, response['green']);
-  await Promise.all([redConnect, blueConnect, greenConnect]);
+  await Promise.all([redConnect, blueConnect, greenConnect])
+    .catch(error => throwError(error, 'Connection failed (code 2).'));
 
   document.getElementById("loading").style.display = 'none';
   document.getElementById("play").style.display = 'block';
@@ -168,5 +177,11 @@ async function init() {
   document.getElementById("pause").addEventListener("click", pause);
   document.getElementById("channel-up").addEventListener("click", () => changeChannel(channelUp));
   document.getElementById("channel-down").addEventListener("click", () => changeChannel(channelDown));
+
+  if(currentChannel === 0) {
+    document.getElementById("channel-down").style.display = 'none';
+    document.getElementById("channel-up").style.display = 'none';
+    document.getElementById("live-marker").style.display = 'initial';
+  }
 }
 init();

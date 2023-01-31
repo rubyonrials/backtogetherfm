@@ -1,8 +1,3 @@
-<!--
-  Server
-  1. Everything!
--->
-
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,11 +31,33 @@
         }
       }
 
+      #title {
+        margin: 19px 0 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
       h1 {
         font-size: 23px;
         font-family: monospace;
-        margin: 19px 0 0;
         letter-spacing: 2px;
+        margin: 0;
+      }
+
+      #live-marker {
+        color: red;
+        height: 16px;
+        margin-left: 5px;
+        display: none;
+      }
+
+      .blinking {
+        animation: blink 1s steps(5, start) infinite;
+      }
+
+      @keyframes blink {
+        to { visibility: hidden; }
       }
 
       #page {
@@ -95,7 +112,10 @@
       <div id='sunburst'></div>
       <div id='sunburst2'></div>
       <div id='content'>
-        <h1>BackTogether.FM</h1>
+        <div id='title'>
+          <h1>BackTogether.FM</h1>
+          <span id='live-marker' class='blinking'>⏺</span>
+        </div>
         <p>
           Public silent disco with your own earphones.
           <a href='https://github.com/rubyonrials/backtogetherfm' target='_blank'>&#9432;</a>
@@ -104,7 +124,7 @@
 
         <div class='radio-controls'>
           <div id='channel-up' class='radio-control' style='visibility:hidden;'>⏮︎</div>
-          <p id='loading'>Connecting...</p>
+          <p id='loading' class='blinking'>Connecting...</p>
           <div id='play' class='radio-control' style='display:none;'>⏵︎</div>
           <div id='pause' class='radio-control' style='display:none;'>⏸︎</div>
           <div id='channel-down' class='radio-control' style='visibility:hidden;'>⏭︎</div>
