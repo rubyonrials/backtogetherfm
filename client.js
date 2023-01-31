@@ -4,6 +4,8 @@
 // 3. occassionally parcel's auto-reload keeps playing a track even though it shouldn't (could be specific to parcel)
 // 4. i should really transition to a deployed environment to get rid of ngrok issues...
 const livekit = require('livekit-client');
+import NoSleep from 'nosleep.js';
+var noSleep = new NoSleep();
 
 const tokenServerURI = 'https://3b9e-157-131-123-98.ngrok.io';
 const webrtcURI = 'wss://backtogetherfm.livekit.cloud';
@@ -59,6 +61,7 @@ function pauseCurrentAudio() {
   // document.getElementById('debug').innerHTML = JSON.stringify(livekitCache);
   channelCache = livekitCache[channelDirectory[currentChannel]];
   channelCache['publication'].setEnabled(false);
+  noSleep.disable();
 }
 
 function playAudio(track) {
@@ -105,6 +108,7 @@ function playCurrentChannel() {
 
   channelCache['publication'].setEnabled(true);
   playAudio(channelCache['track']);
+  noSleep.enable();
 }
 
 function pause() {
