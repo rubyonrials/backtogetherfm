@@ -1,8 +1,8 @@
-// Multiple issues right now.
-// 1. phone can't connect to webrtc server for some reason, even after stashing all changes from last time it was working
-// 2. if any channel doesn't have any tracks on it, livekitCache breaks
-// 3. occassionally parcel's auto-reload keeps playing a track even though it shouldn't (could be specific to parcel)
-// 4. i should really transition to a deployed environment to get rid of ngrok issues...
+// 1. Rewrite the UI to be declaritive (create-react-app, maybe next.js? ask daws)
+// 2. Handle tracks stopping, one or more channels being unavailable for broadcast.
+// 3. Deploy client + server to production environment
+// 4. Consider having "rooms" be long-lived / created by the server rather than the client on-join.
+// 5. Consider saving JWT as cookie for individual participants to aid Livekit Cloud analytics (i.e. don't need to reissue an auth token every time your refresh... could be needless complication tho)
 const livekit = require('livekit-client');
 import NoSleep from 'nosleep.js';
 var noSleep = new NoSleep();
@@ -15,17 +15,17 @@ const blueChannel = new livekit.Room({ adaptiveStream: true, dynacast: true });
 const greenChannel = new livekit.Room({ adaptiveStream: true, dynacast: true });
 redChannel
   .on(livekit.RoomEvent.TrackSubscribed, (track, publication, participant) => handleTrackSubscribed('red', track, publication, participant))
-  .on(livekit.RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
+  .on(livekit.RoomEvent.TrackUnsubscribed, (track, publication, participant) => handleTrackUnsubscribed('red', track, publication, participant))
   .on(livekit.RoomEvent.Disconnected, handleDisconnect)
   .on(livekit.RoomEvent.LocalTrackUnpublished, handleLocalTrackUnpublished);
 blueChannel
   .on(livekit.RoomEvent.TrackSubscribed, (track, publication, participant) => handleTrackSubscribed('blue', track, publication, participant))
-  .on(livekit.RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
+  .on(livekit.RoomEvent.TrackUnsubscribed, (track, publication, participant) => handleTrackUnsubscribed('blue', track, publication, participant))
   .on(livekit.RoomEvent.Disconnected, handleDisconnect)
   .on(livekit.RoomEvent.LocalTrackUnpublished, handleLocalTrackUnpublished);
 greenChannel
   .on(livekit.RoomEvent.TrackSubscribed, (track, publication, participant) => handleTrackSubscribed('green', track, publication, participant))
-  .on(livekit.RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
+  .on(livekit.RoomEvent.TrackUnsubscribed, (track, publication, participant) => handleTrackUnsubscribed('green', track, publication, participant))
   .on(livekit.RoomEvent.Disconnected, handleDisconnect)
   .on(livekit.RoomEvent.LocalTrackUnpublished, handleLocalTrackUnpublished);
 
@@ -52,6 +52,10 @@ var livekitCache = {
 }
 
 function removeExistingAudio() {
+  // Removing the HTML5 <audio> element allows LiveKit to recycle
+  // the element. When recycled, iOS doesn't require further user
+  // interaction for subsequent audio playback.
+  // This does not necessarily stop the audio from playing, strangely.
   const existingAudio = document.getElementById('livekit-audio');
   if (existingAudio) { existingAudio.remove() };
 }
@@ -60,7 +64,7 @@ function pauseCurrentAudio() {
   removeExistingAudio();
   // document.getElementById('debug').innerHTML = JSON.stringify(livekitCache);
   channelCache = livekitCache[channelDirectory[currentChannel]];
-  channelCache['publication'].setEnabled(false);
+  if (channelCache['publication']) channelCache['publication'].setEnabled(false);
   noSleep.disable();
 }
 
@@ -68,7 +72,7 @@ function playAudio(track) {
   removeExistingAudio();
   const newChannelAudio = track.attach();
   newChannelAudio.setAttribute('id', 'livekit-audio');
-  newChannelAudio.setAttribute('title', 'BackTogether.FM');
+  newChannelAudio.setAttribute('title', 'BackTogether.FM'); // Lock screen text
   newChannelAudio.removeAttribute('autoplay');
   document.body.appendChild(newChannelAudio);
 }
@@ -81,7 +85,16 @@ function handleTrackSubscribed(channel, track, publication, participant) {
 
   if (channel === channelDirectory[currentChannel]) {
     // If track is published to current channel, remove and attach (livekit will recyle the audio element)
-    playAudio(track);
+    // Only play the audio if something is currently playing (existing audio, i think). if we're paused, don't do anything
+    const existingAudio = document.getElementById('livekit-audio');
+    if (existingAudio) {
+      playAudio(track);
+    } else {
+      // Add back the play button
+      publication.setEnabled(false);
+      document.getElementById("loading").style.display = 'none';
+      document.getElementById("play").style.display = 'block';
+    }
   } else {
     // if track is NOT in the current channel, add it to the cache of channel-track(s) to play, and set publication.setEnabled(false).
     // when changing the channel, subscribe to the latest channel-track, and publication.setEnabled(true)
@@ -89,26 +102,32 @@ function handleTrackSubscribed(channel, track, publication, participant) {
   }
 }
 
-function handleTrackUnsubscribed(track, publication, participant) {
+function handleTrackUnsubscribed(channel, track, publication, participant) {
+  if (track.kind !== livekit.Track.Kind.Audio) return;
+
+  livekitCache[channel]['track'] = null;
+  livekitCache[channel]['publication'] = null;
+
   track.detach();
+
+  if (channel === channelDirectory[currentChannel]) {
+    pause();
+    // Remove the play button
+    document.getElementById("loading").innerHTML = 'Channel broadcast ended.';
+    document.getElementById("loading").classList.add('blinking');
+    document.getElementById("loading").style.display = 'block';
+    document.getElementById("play").style.display = 'none';
+  }
+  console.log('UNSUBSCRIBED');
 }
 
 function handleLocalTrackUnpublished(track, participant) {
   track.detach();
+  console.log('UNPUBLISHED');
 }
 
 function handleDisconnect() {
   console.log('disconnected from room');
-}
-
-function playCurrentChannel() {
-  // document.getElementById('debug').innerHTML = JSON.stringify(livekitCache);
-  channelCache = livekitCache[channelDirectory[currentChannel]];
-  // Need to handle the case where one or more channels is not publishing audio!
-
-  channelCache['publication'].setEnabled(true);
-  playAudio(channelCache['track']);
-  noSleep.enable();
 }
 
 function pause() {
@@ -148,7 +167,10 @@ async function changeChannel(channel) {
   document.getElementById("channel-up").style.visibility = 'visible';
   document.getElementById("channel-down").style.visibility = 'visible';
 
-  playCurrentChannel();
+  channelCache = livekitCache[channelDirectory[currentChannel]];
+  channelCache['publication'].setEnabled(true);
+  playAudio(channelCache['track']);
+  noSleep.enable();
 }
 
 function throwError(error, customMessage) {
@@ -181,6 +203,7 @@ async function init() {
   document.getElementById("pause").addEventListener("click", pause);
   document.getElementById("channel-up").addEventListener("click", () => changeChannel(channelUp));
   document.getElementById("channel-down").addEventListener("click", () => changeChannel(channelDown));
+  document.getElementById("radio-controls").style.display = 'flex';
 
   if(currentChannel === 0) {
     document.getElementById("channel-down").style.display = 'none';

@@ -32,7 +32,7 @@
       }
 
       #title {
-        margin: 19px 0 0;
+        margin: 0;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -81,8 +81,8 @@
         color: #101010;
       }
 
-      p {
-        margin: 3px 0;
+      #subtitle {
+        margin: 3px 0 25px;
       }
 
       a {
@@ -90,20 +90,22 @@
         text-decoration: none;
       }
 
-      .radio-controls {
+      #radio-controls {
         display: flex;
         justify-content: center;
+        margin-bottom: 25px;
       }
 
       .radio-control {
         font-size: 28px;
-        padding: 25px;
+        padding: 0 25px;
         margin: 0 15px;
         user-select: none;
       }
       .radio-control:hover {cursor: pointer;}
       #play, #pause { width: 18px; }
-      #loading { margin: auto; }
+      #debug { margin: 0; }
+      #loading { margin: 0; }
     </style>
   </head>
 
@@ -116,22 +118,23 @@
           <h1>BackTogether.FM</h1>
           <span id='live-marker' class='blinking'>⏺</span>
         </div>
-        <p>
+        <p id='subtitle'>
           Public silent disco with your own earphones.
           <a href='https://github.com/rubyonrials/backtogetherfm' target='_blank'>&#9432;</a>
         </p>
-        <p id="debug"></p>
 
-        <div class='radio-controls'>
+        <div id='radio-controls' style='display: none;'>
           <div id='channel-up' class='radio-control' style='visibility:hidden;'>⏮︎</div>
-          <p id='loading' class='blinking'>Connecting...</p>
           <div id='play' class='radio-control' style='display:none;'>⏵︎</div>
           <div id='pause' class='radio-control' style='display:none;'>⏸︎</div>
           <div id='channel-down' class='radio-control' style='visibility:hidden;'>⏭︎</div>
         </div>
+
+        <p id='loading' class='blinking'>Connecting...</p>
       </div>
     </div>
 
+    <p id="debug"></p>
     <script type="module" src="client.js"></script>
   </body>
 </html>
