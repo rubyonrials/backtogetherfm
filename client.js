@@ -197,6 +197,7 @@ async function init() {
   await Promise.all([redConnect, blueConnect, greenConnect])
     .catch(error => throwError(error, 'Connection failed (code 2).'));
 
+  // return;
   document.getElementById("loading").style.display = 'none';
   document.getElementById("play").style.display = 'block';
   document.getElementById("play").addEventListener("click", () => changeChannel(currentChannel));
