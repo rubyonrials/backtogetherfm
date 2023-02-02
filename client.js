@@ -1,6 +1,7 @@
 // 1. Deploy client + server to production environment
 // 2. Consider having "rooms" be long-lived / created by the server rather than the client on-join.
 // 3. Consider saving JWT as cookie for individual participants to aid Livekit Cloud analytics (i.e. don't need to reissue an auth token every time your refresh... could be needless complication tho)
+// 4. Think about looping playback, rather than letting it stop.
 const livekit = require('livekit-client');
 import NoSleep from 'nosleep.js';
 var noSleep = new NoSleep();
@@ -10,12 +11,12 @@ const WEBRTC_SERVER_URI = 'wss://backtogetherfm.livekit.cloud';
 const RED = 'red';
 const BLUE = 'blue';
 const GREEN = 'green';
+const LIVE_COLOR_OPAQUE = '#ffb100ba';
+const LIVE_COLOR_TRANSPARENT = '#ffb10042';
 
 var currentChannel, channelBackward, channelForward;
 var initializedRadioControls, userInitiatedPlayback = false;
 
-const liveColorOpaque = '#ffb100ba';
-const liveColorTransparent = '#ffb10042';
 const channelDirectory = {
   red: {
     colorOpaque:'#dc322fba',
@@ -121,7 +122,14 @@ handleTrackUnsubscribed = (channel, track, publication, participant) => {
 
   if (channel === currentChannel) {
     pause();
-    displayLoading('IN_PROGRESS', 'Channel broadcast ended.');
+
+    const broadcastingChannels = getBroadcastingChannels();
+    if (broadcastingChannels?.length) {
+      // Otherwise, let the normal updateRadioControls() in pause() display the proper message.
+      displayLoading('IN_PROGRESS', 'Channel broadcast ended.');
+    } else {
+      displayLoading('IN_PROGRESS', 'Broadcast ended. Wait for the next event!');
+    }
   } else {
     updateRadioControls();
   }
@@ -268,8 +276,8 @@ updateRadioControls = (type) => {
 
   if (!channelBackward && !channelForward) {
     document.getElementById("live-marker").style.display = 'initial';
-    currentColorOpaque = liveColorOpaque;
-    currentColorTransparent = liveColorTransparent;
+    currentColorOpaque = LIVE_COLOR_OPAQUE;
+    currentColorTransparent = LIVE_COLOR_TRANSPARENT;
   } else {
     document.getElementById("live-marker").style.display = 'none';
   }
