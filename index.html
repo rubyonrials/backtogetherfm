@@ -108,8 +108,7 @@
 
       #loading {
         margin: 25px 0 0;
-        height: 35px;
-        line-height: 35px;
+        min-height: 35px;
         text-align: center;
       }
     </style>
@@ -122,7 +121,7 @@
       <div id='content'>
         <div id='title'>
           <h1>BackTogether.FM</h1>
-          <span id='live-marker' class='blinking'>⏺</span>
+          <span id='live-marker' class='blinking' style='display: none;'>⏺</span>
         </div>
         <p id='subtitle'>
           Public silent disco with your own earphones.
@@ -130,10 +129,10 @@
         </p>
 
         <div id='radio-controls' style='display: none;'>
-          <div id='channel-up' class='radio-control' style='visibility:hidden;'>⏮︎</div>
+          <div id='channel-backward' class='radio-control' style='visibility:hidden;'>⏮︎</div>
           <div id='play' class='radio-control' style='display:none;'>⏵︎</div>
           <div id='pause' class='radio-control' style='display:none;'>⏸︎</div>
-          <div id='channel-down' class='radio-control' style='visibility:hidden;'>⏭︎</div>
+          <div id='channel-forward' class='radio-control' style='visibility:hidden;'>⏭︎</div>
         </div>
 
         <p id='loading' class='blinking'>Connecting...</p>
