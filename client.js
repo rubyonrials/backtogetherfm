@@ -1,12 +1,9 @@
-// 1. Deploy client + server to production environment
-// 2. Consider having "rooms" be long-lived / created by the server rather than the client on-join.
-// 3. Consider saving JWT as cookie for individual participants to aid Livekit Cloud analytics (i.e. don't need to reissue an auth token every time your refresh... could be needless complication tho)
-// 4. Think about looping playback, rather than letting it stop.
+// 1. Consider saving JWT as cookie for individual participants to aid Livekit Cloud analytics (i.e. don't need to reissue an auth token every time your refresh... could be needless complication tho)
 import * as livekit from "https://esm.sh/livekit-client@1.6.3";
 import NoSleep from "https://esm.sh/nosleep.js@0.12.0";
 var noSleep = new NoSleep();
 
-const TOKEN_SERVER_URI = 'https://3b9e-157-131-123-98.ngrok.io';
+const TOKEN_SERVER_URI = 'https://backtogetherfm-server.herokuapp.com';
 const WEBRTC_SERVER_URI = 'wss://backtogetherfm.livekit.cloud';
 const RED = 'red';
 const BLUE = 'blue';
