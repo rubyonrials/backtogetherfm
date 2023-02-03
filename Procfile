@@ -1,1 +1,1 @@
-web: http-server .build -p $PORT
+web: npm install -g http-server && http-server -p $PORT
