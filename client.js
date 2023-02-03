@@ -2,8 +2,8 @@
 // 2. Consider having "rooms" be long-lived / created by the server rather than the client on-join.
 // 3. Consider saving JWT as cookie for individual participants to aid Livekit Cloud analytics (i.e. don't need to reissue an auth token every time your refresh... could be needless complication tho)
 // 4. Think about looping playback, rather than letting it stop.
-const livekit = require('livekit-client');
-import NoSleep from 'nosleep.js';
+import * as livekit from "https://esm.sh/livekit-client@1.6.3";
+import NoSleep from "https://esm.sh/nosleep.js@0.12.0";
 var noSleep = new NoSleep();
 
 const TOKEN_SERVER_URI = 'https://3b9e-157-131-123-98.ngrok.io';
@@ -50,18 +50,18 @@ var livekitCache = {
   }
 }
 
-getBroadcastingChannels = () => {
+const getBroadcastingChannels = () => {
   return Object.keys(livekitCache).filter(channel => {
     return !!livekitCache[channel].track && !!livekitCache[channel].publication
   });
 }
 
-currentChannelIsPlaying = () => {
+const currentChannelIsPlaying = () => {
   if (!livekitCache[currentChannel].publication) return false;
   return !livekitCache[currentChannel].publication.disabled;
 }
 
-removeExistingAudio = () => {
+const removeExistingAudio = () => {
   // Removing the HTML5 <audio> element allows LiveKit to recycle
   // the element. When recycled, iOS doesn't require further user
   // interaction for subsequent audio playback.
@@ -70,14 +70,14 @@ removeExistingAudio = () => {
   if (existingAudio) { existingAudio.remove() };
 }
 
-stopAudioPlayback = () => {
+const stopAudioPlayback = () => {
   removeExistingAudio();
-  channelCache = livekitCache[currentChannel];
+  const channelCache = livekitCache[currentChannel];
   if (channelCache.publication) channelCache.publication.setEnabled(false);
   noSleep.disable();
 }
 
-startAudioPlayback = (track) => {
+const startAudioPlayback = (track) => {
   if (!userInitiatedPlayback) userInitiatedPlayback = true;
 
   removeExistingAudio();
@@ -88,7 +88,7 @@ startAudioPlayback = (track) => {
   document.body.appendChild(newChannelAudio);
 }
 
-handleTrackSubscribed = (channel, track, publication, participant) => {
+const handleTrackSubscribed = (channel, track, publication, participant) => {
   console.log('Livekit:handleTrackSubscribed');
   if (track.kind !== livekit.Track.Kind.Audio) return;
 
@@ -111,7 +111,7 @@ handleTrackSubscribed = (channel, track, publication, participant) => {
   updateRadioControls(reinitialize ? 'INITIALIZE' : null);
 }
 
-handleTrackUnsubscribed = (channel, track, publication, participant) => {
+const handleTrackUnsubscribed = (channel, track, publication, participant) => {
   console.log('Livekit:handleTrackUnsubscribed');
   if (track.kind !== livekit.Track.Kind.Audio) return;
 
@@ -135,12 +135,12 @@ handleTrackUnsubscribed = (channel, track, publication, participant) => {
   }
 }
 
-handleLocalTrackUnpublished = (track, participant) => {
+const handleLocalTrackUnpublished = (track, participant) => {
   console.log('Livekit:handleLocalTrackUnpublished');
   track.detach();
 }
 
-handleDisconnect = () => {
+const handleDisconnect = () => {
   console.log('Livekit:handleDisconnect');
 }
 
@@ -163,19 +163,19 @@ greenChannel
   .on(livekit.RoomEvent.Disconnected, handleDisconnect)
   .on(livekit.RoomEvent.LocalTrackUnpublished, handleLocalTrackUnpublished);
 
-pause = () => {
+const pause = () => {
   stopAudioPlayback();
   updateRadioControls();
 }
 
 // channel: RED | BLUE | GREEN
-playChannel = async (channel) => {
+const playChannel = async (channel) => {
   if (currentChannel !== channel) {
     stopAudioPlayback();
     currentChannel = channel;
   }
 
-  channelCache = livekitCache[currentChannel];
+  const channelCache = livekitCache[currentChannel];
   channelCache.publication.setEnabled(true);
   updateRadioControls();
   startAudioPlayback(channelCache.track);
@@ -184,7 +184,7 @@ playChannel = async (channel) => {
 
 // type: 'NONE' | 'IN_PROGRESS' | 'ERROR' | 'WARNING'
 // message: String
-displayLoading = (type, message = null) => {
+const displayLoading = (type, message = null) => {
   if (type === 'NONE') {
     document.getElementById("loading").style.display = 'none';
     document.getElementById("loading").innerHTML = '';
@@ -208,13 +208,13 @@ displayLoading = (type, message = null) => {
 
 // error: Error
 // customMessage: String
-throwError = (error, customMessage) => {
+const throwError = (error, customMessage) => {
   const fullErrorMessage = `${customMessage}\n\n ${error}`;
   displayLoading('ERROR', fullErrorMessage);
   throw new Error(fullErrorMessage);
 }
 
-connectToLivekit = async () => {
+const connectToLivekit = async () => {
   const response = await fetch(`${TOKEN_SERVER_URI}/issue-tokens`,
     {
       method: 'GET',
@@ -232,7 +232,7 @@ connectToLivekit = async () => {
 }
 
 // type: 'INITIALIZE' | null
-updateRadioControls = (type) => {
+const updateRadioControls = (type) => {
   if (!initializedRadioControls && type !== 'INITIALIZE') return;
   if (!initializedRadioControls) initializedRadioControls = true;
 
@@ -316,7 +316,7 @@ updateRadioControls = (type) => {
   document.getElementById("radio-controls").style.display = 'flex';
 }
 
-initialize = async () => {
+const initialize = async () => {
   await connectToLivekit();
 
   document.getElementById("play").addEventListener("click", () => playChannel(currentChannel));
@@ -325,7 +325,7 @@ initialize = async () => {
   document.getElementById("channel-forward").addEventListener("click", () => playChannel(channelForward));
 
   // Give Livekit time to handleTrackSubscribed()
-  await new Promise(r => setTimeout(r, 500));
+  // await new Promise(r => setTimeout(r, 500));
 
   const broadcastingChannels = getBroadcastingChannels();
   currentChannel = broadcastingChannels[Math.floor(Math.random() * broadcastingChannels.length)];
