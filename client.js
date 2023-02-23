@@ -1,4 +1,8 @@
 // 1. Consider saving JWT as cookie for individual participants to aid Livekit Cloud analytics (i.e. don't need to reissue an auth token every time your refresh... could be needless complication tho)
+// 2. Now-playing would be cool; move blinking red light to "LIVE"
+// 3. rename branch to main, push to GH, write readme
+// 4. notification system for in-person vs. online events
+// 5. weekly radio show for relaxed dj-ing, comedy spots, news/updates
 import * as livekit from "https://esm.sh/livekit-client@1.6.3";
 import NoSleep from "https://esm.sh/nosleep.js@0.12.0";
 var noSleep = new NoSleep();
