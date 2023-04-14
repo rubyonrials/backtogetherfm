@@ -300,7 +300,11 @@ const updateRadioControls = (type) => {
   if(currentChannelIsPlaying()) {
     document.getElementById("play").style.display = 'none';
     document.getElementById("pause").style.display = 'block';
-    document.getElementById("page").style.background = `radial-gradient(circle at center, #f7f3ea 25%, ${currentColorOpaque} 81%)`;
+
+
+    document.getElementById("page").style.background = `radial-gradient(ellipse 368% 64% at 50% 106%, rgb(247, 243, 234) 25%, ${currentColorOpaque} 81%)`;
+    // document.getElementById("page").style.background = `radial-gradient(circle at center, #f7f3ea 25%, ${currentColorOpaque} 81%)`;
+
     document.getElementById("sunburst").style.background = `repeating-conic-gradient( #ababab 0deg, ${currentColorTransparent} 1deg, #ababab 2deg, #ababab00 3deg)`;
     document.getElementById("sunburst2").style.background = `repeating-conic-gradient(#ababab00 0deg, ${currentChannel} 3deg)`;
   } else {
