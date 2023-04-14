@@ -8,9 +8,11 @@
 
       #sunburst, #sunburst2 {
         position: absolute;
-        width: 200vmax;
-        height: 200vmax;
-        bottom: -85vmax;
+        width: 150vmax;
+        height: 150vmax;
+        top: 0;
+        bottom: 0;
+        margin: auto;
         border-radius: 50%;
       }
       #sunburst {
@@ -45,13 +47,6 @@
         margin: 0;
       }
 
-      #live-marker {
-        color: red;
-        height: 16px;
-        margin-left: 5px;
-        display: none;
-      }
-
       .blinking {
         animation: blink 1s steps(5, start) infinite;
       }
@@ -61,7 +56,8 @@
       }
 
       #page {
-        background: radial-gradient(368% 64% at 50% 106%, rgb(247, 243, 234) 25%, rgba(255, 177, 0, 0.73) 81%);
+        background: radial-gradient(circle at center, #fff7dd 33%, #101010 81%);
+        background: #fff7dd;
         display: flex;
         justify-content: center;
         height: 100%;
@@ -110,53 +106,6 @@
         min-height: 35px;
         text-align: center;
       }
-
-      #radio-image {
-        height: 100%;
-        width: 100%;
-        max-width: 200px;
-        max-height: 200px;
-        bottom: 40px;
-        position: absolute;
-        background: center / contain no-repeat url(radio-crop.png);
-        z-index: 2;
-      }
-
-      #bar {
-        height: 70px;
-        width: 100%;
-        position: absolute;
-        bottom: 0;
-        background: #f7f3ea;
-        display: flex;
-      }
-
-      .bar-button {
-        padding: 15px;
-        padding-left: 30px;
-        display: flex;
-        justify-content: center;
-        flex-direction: column;
-      }
-      .bar-button:hover {
-        cursor: pointer;
-      }
-
-      .bar-button-contents {
-        display: flex;
-      }
-
-      .bar-button-text {
-        text-decoration: underline;
-      }
-
-      .counter {
-        margin-left: 5px;
-        background: #d8d3d3;
-        border-radius: 50%;
-        width: 20px;
-        text-align: center;
-      }
     </style>
   </head>
 
@@ -164,32 +113,16 @@
     <div id='page'>
       <div id='sunburst'></div>
       <div id='sunburst2'></div>
-      <div id='radio-image'></div>
-
-      <div id='bar'>
-        <div class='bar-button'>
-          <div class='bar-button-contents'>
-            <span class='bar-button-text'>Join/Create Disco</span>
-          </div>
-        </div>
-
-        <div class='bar-button'>
-          <div class='bar-button-contents'>
-            <span class='bar-button-text'>Upcoming events</span>
-            <div class='counter'>0</div>
-          </div>
-        </div>
-      </div>
-
       <div id='content'>
         <div id='title'>
           <h1>BackTogether.FM</h1>
-          <span id='live-marker' class='blinking' style='display: none;'>⏺</span>
         </div>
         <p id='subtitle'>
           Public silent disco with your own earphones.
           <a href='https://github.com/rubyonrials/backtogetherfm' target='_blank'>&#9432;</a>
         </p>
+
+        <div id='now-playing'></div>
 
         <div id='radio-controls' style='display: none;'>
           <div id='channel-backward' class='radio-control' style='visibility:hidden;'>⏮︎</div>
