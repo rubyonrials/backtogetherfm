@@ -16,6 +16,11 @@ const LIVE_COLOR_OPAQUE = '#ffb100ba';
 const LIVE_COLOR_TRANSPARENT = '#ffb10042';
 const AUDIO_PLAYER_ID = 'hls-audio';
 
+// Channel states
+const INITIAL = 'INITIAL';
+const NO_BROADCAST = 'NO_BROADCAST';
+const BROADCASTING = 'BROADCASTING';
+
 var currentChannel, channelBackward, channelForward;
 var initializedRadioControls, userInitiatedPlayback = false;
 
@@ -37,23 +42,22 @@ const channelDirectory = {
   }
 }
 
-// var livekitCache = {
-//   red: {
-//     track: null,
-//     publication: null,
-//   },
-//   blue: {
-//     track: null,
-//     publication: null,
-//   },
-//   green: {
-//     track: null,
-//     publication: null,
-//   }
-// }
+// broadcastState: INITIAL | NO_BROADCAST | BROADCASTING
+var channelState = {
+  [ RED ] : {
+    broadcastState: INITIAL
+  },
+  [ GREEN ] : {
+    broadcastState: INITIAL
+  },
+  [ BLUE ] : {
+    broadcastState: INITIAL
+  }
+}
 
 // const audioSrc = 'https://backtogetherfm-server.herokuapp.com/source-hls/imgood.m3u8';
 // const audioSrc = 'http://localhost:3000/imgood.m3u8';
+// This will probably be replaced by a response from a broadcast source URLs API...
 var hlsSourceDirectory = {
   [ RED ]: 'https://backtogetherfm-server.herokuapp.com/source-hls/imgood.m3u8',
   [ BLUE ]: '',
@@ -81,38 +85,52 @@ const stopAudioPlayback = () => {
   noSleep.disable();
 }
 
-const startAudioPlayback = (channel) => {
+// In this function, we promisify callback-based APIs needed for initializing.
+// This allows us to wait until <audio> has actually started playing.
+// https://chat.openai.com/c/2cdcc72b-4943-4606-ac67-603e1a475d09
+const startAudioPlayback = async () => {
+
   if (!userInitiatedPlayback) userInitiatedPlayback = true;
+  // Is current channel broadcasting?
   const audioPlayer = getAudioPlayer();
 
-  console.log("SOURCE");
-  console.log(hlsSourceDirectory[channel]);
-
   if (Hls.isSupported()) {
-    console.log('1');
-    const hls = new Hls();
-    hls.loadSource(hlsSourceDirectory[channel]);
-    hls.attachMedia(audioPlayer);
-    hls.on(Hls.Events.MANIFEST_PARSED, function () {
-      audioPlayer.play();
-    });
+    const initializeHlsJs = (channel) => {
+      const audioPlayer = getAudioPlayer();
+
+      return new Promise((resolve, reject) => {
+        const hls = new Hls();
+        hls.loadSource(hlsSourceDirectory[channel]);
+        hls.attachMedia(audioPlayer);
+        hls.on(Hls.Events.MANIFEST_PARSED, async () => {
+          await audioPlayer.play(); //set BROADCASTING state
+          resolve();
+        });
+      });
+    }
+
+    await initializeHlsJs(currentChannel);
   } else if (audioPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-    console.log('2');
-    // For browsers with native HLS support (e.g., Safari)
-    audioPlayer.src = hlsSourceDirectory[channel];
-    audioPlayer.addEventListener('loadedmetadata', function () {
-      audioPlayer.play();
-    });
+    const initializeNativeHls = (channel) => {
+      const audioPlayer = getAudioPlayer();
+
+      return new Promise((resolve, reject) => {
+        audioPlayer.src = hlsSourceDirectory[channel];
+        audioPlayer.addEventListener('loadedmetadata', async () => {
+          await audioPlayer.play(); // set BROADCASTING state
+          resolve();
+        });
+      });
+    };
+
+    await initializeNativeHls(currentChannel);
   } else {
-    console.log('3');
     console.error('HLS.js is not supported in this browser.');
   }
-
-  audioPlayer.src = hlsSourceDirectory[channel];
 }
 
 // Called when new channel information is received from the broadcasting server
-const subscribe = (channel) => {
+const subscribe = async (channel) => {
   console.log('subscribe');
 
   var reinitialize = false;
@@ -122,7 +140,7 @@ const subscribe = (channel) => {
   }
 
   if (userInitiatedPlayback && channel === currentChannel) {
-    startAudioPlayback(track);
+    await startAudioPlayback();
   }
 
   updateRadioControls(reinitialize ? 'INITIALIZE' : null);
@@ -160,8 +178,9 @@ const playChannel = async (channel) => {
     currentChannel = channel;
   }
 
+  await startAudioPlayback(channel);
+  // await new Promise(r => setTimeout(r, 100));
   updateRadioControls();
-  startAudioPlayback(channel);
   noSleep.enable();
 }
 
@@ -196,6 +215,10 @@ const throwError = (error, customMessage) => {
   displayLoading('ERROR', fullErrorMessage);
   throw new Error(fullErrorMessage);
 }
+
+// const subscribeToBroadcasts = async () => {
+//   const redConnect = 
+// }
 
 // const connectToLivekit = async () => {
 //   const response = await fetch(`${TOKEN_SERVER_URI}/issue-tokens`,
