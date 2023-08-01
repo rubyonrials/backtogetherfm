@@ -14,6 +14,7 @@ const BLUE = 'blue';
 const GREEN = 'green';
 const LIVE_COLOR_OPAQUE = '#ffb100ba';
 const LIVE_COLOR_TRANSPARENT = '#ffb10042';
+const AUDIO_PLAYER_ID = 'hls-audio';
 
 var currentChannel, channelBackward, channelForward;
 var initializedRadioControls, userInitiatedPlayback = false;
@@ -36,65 +37,83 @@ const channelDirectory = {
   }
 }
 
-var livekitCache = {
-  red: {
-    track: null,
-    publication: null,
-  },
-  blue: {
-    track: null,
-    publication: null,
-  },
-  green: {
-    track: null,
-    publication: null,
-  }
+// var livekitCache = {
+//   red: {
+//     track: null,
+//     publication: null,
+//   },
+//   blue: {
+//     track: null,
+//     publication: null,
+//   },
+//   green: {
+//     track: null,
+//     publication: null,
+//   }
+// }
+
+// const audioSrc = 'https://backtogetherfm-server.herokuapp.com/source-hls/imgood.m3u8';
+// const audioSrc = 'http://localhost:3000/imgood.m3u8';
+var hlsSourceDirectory = {
+  [ RED ]: 'https://backtogetherfm-server.herokuapp.com/source-hls/imgood.m3u8',
+  [ BLUE ]: '',
+  [ GREEN ]: ''
+}
+
+const getAudioPlayer = () => {
+  return document.getElementById(AUDIO_PLAYER_ID);
 }
 
 const getBroadcastingChannels = () => {
-  return Object.keys(livekitCache).filter(channel => {
-    return !!livekitCache[channel].track && !!livekitCache[channel].publication
-  });
+  return [RED];
+  // return Object.keys(livekitCache).filter(channel => {
+  //   return !!livekitCache[channel].track && !!livekitCache[channel].publication
+  // });
 }
 
 const currentChannelIsPlaying = () => {
-  if (!livekitCache[currentChannel].publication) return false;
-  return !livekitCache[currentChannel].publication.disabled;
-}
-
-const removeExistingAudio = () => {
-  // Removing the HTML5 <audio> element allows LiveKit to recycle
-  // the element. When recycled, iOS doesn't require further user
-  // interaction for subsequent audio playback.
-  // This does not necessarily stop the audio from playing, strangely.
-  const existingAudio = document.getElementById('livekit-audio');
-  if (existingAudio) { existingAudio.remove() };
+  return !getAudioPlayer().paused;
 }
 
 const stopAudioPlayback = () => {
-  removeExistingAudio();
-  const channelCache = livekitCache[currentChannel];
-  if (channelCache.publication) channelCache.publication.setEnabled(false);
+  const audioPlayer = getAudioPlayer();
+  audioPlayer.pause();
   noSleep.disable();
 }
 
-const startAudioPlayback = (track) => {
+const startAudioPlayback = (channel) => {
   if (!userInitiatedPlayback) userInitiatedPlayback = true;
+  const audioPlayer = getAudioPlayer();
 
-  removeExistingAudio();
-  const newChannelAudio = track.attach();
-  newChannelAudio.setAttribute('id', 'livekit-audio');
-  newChannelAudio.setAttribute('title', 'BackTogether.FM'); // Lock screen text
-  newChannelAudio.removeAttribute('autoplay');
-  document.body.appendChild(newChannelAudio);
+  console.log("SOURCE");
+  console.log(hlsSourceDirectory[channel]);
+
+  if (Hls.isSupported()) {
+    console.log('1');
+    const hls = new Hls();
+    hls.loadSource(hlsSourceDirectory[channel]);
+    hls.attachMedia(audioPlayer);
+    hls.on(Hls.Events.MANIFEST_PARSED, function () {
+      audioPlayer.play();
+    });
+  } else if (audioPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+    console.log('2');
+    // For browsers with native HLS support (e.g., Safari)
+    audioPlayer.src = hlsSourceDirectory[channel];
+    audioPlayer.addEventListener('loadedmetadata', function () {
+      audioPlayer.play();
+    });
+  } else {
+    console.log('3');
+    console.error('HLS.js is not supported in this browser.');
+  }
+
+  audioPlayer.src = hlsSourceDirectory[channel];
 }
 
-const handleTrackSubscribed = (channel, track, publication, participant) => {
-  console.log('Livekit:handleTrackSubscribed');
-  if (track.kind !== livekit.Track.Kind.Audio) return;
-
-  livekitCache[channel].track = track;
-  livekitCache[channel].publication = publication;
+// Called when new channel information is received from the broadcasting server
+const subscribe = (channel) => {
+  console.log('subscribe');
 
   var reinitialize = false;
   if (!currentChannel && initializedRadioControls) {
@@ -102,67 +121,32 @@ const handleTrackSubscribed = (channel, track, publication, participant) => {
     reinitialize = true;
   }
 
-  const existingAudio = document.getElementById('livekit-audio');
-  if (existingAudio && userInitiatedPlayback && channel === currentChannel) {
+  if (userInitiatedPlayback && channel === currentChannel) {
     startAudioPlayback(track);
-  } else {
-    publication.setEnabled(false);
   }
 
   updateRadioControls(reinitialize ? 'INITIALIZE' : null);
 }
 
-const handleTrackUnsubscribed = (channel, track, publication, participant) => {
-  console.log('Livekit:handleTrackUnsubscribed');
-  if (track.kind !== livekit.Track.Kind.Audio) return;
+// const handleTrackUnsubscribed = (channel) => {
+//   console.log('channelUnsubscribed');
 
-  livekitCache[channel].track = null;
-  livekitCache[channel].publication = null;
+//   track.detach();
 
-  track.detach();
+//   if (channel === currentChannel) {
+//     pause();
 
-  if (channel === currentChannel) {
-    pause();
-
-    const broadcastingChannels = getBroadcastingChannels();
-    if (broadcastingChannels?.length) {
-      // Otherwise, let the normal updateRadioControls() in pause() display the proper message.
-      displayLoading('IN_PROGRESS', 'Channel broadcast ended.');
-    } else {
-      displayLoading('IN_PROGRESS', 'Broadcast ended. Wait for the next event!');
-    }
-  } else {
-    updateRadioControls();
-  }
-}
-
-const handleLocalTrackUnpublished = (track, participant) => {
-  console.log('Livekit:handleLocalTrackUnpublished');
-  track.detach();
-}
-
-const handleDisconnect = () => {
-  console.log('Livekit:handleDisconnect');
-}
-
-const redChannel = new livekit.Room({ adaptiveStream: true, dynacast: true });
-const blueChannel = new livekit.Room({ adaptiveStream: true, dynacast: true });
-const greenChannel = new livekit.Room({ adaptiveStream: true, dynacast: true });
-redChannel
-  .on(livekit.RoomEvent.TrackSubscribed, (track, publication, participant) => handleTrackSubscribed(RED, track, publication, participant))
-  .on(livekit.RoomEvent.TrackUnsubscribed, (track, publication, participant) => handleTrackUnsubscribed(RED, track, publication, participant))
-  .on(livekit.RoomEvent.Disconnected, handleDisconnect)
-  .on(livekit.RoomEvent.LocalTrackUnpublished, handleLocalTrackUnpublished);
-blueChannel
-  .on(livekit.RoomEvent.TrackSubscribed, (track, publication, participant) => handleTrackSubscribed(BLUE, track, publication, participant))
-  .on(livekit.RoomEvent.TrackUnsubscribed, (track, publication, participant) => handleTrackUnsubscribed(BLUE, track, publication, participant))
-  .on(livekit.RoomEvent.Disconnected, handleDisconnect)
-  .on(livekit.RoomEvent.LocalTrackUnpublished, handleLocalTrackUnpublished);
-greenChannel
-  .on(livekit.RoomEvent.TrackSubscribed, (track, publication, participant) => handleTrackSubscribed(GREEN, track, publication, participant))
-  .on(livekit.RoomEvent.TrackUnsubscribed, (track, publication, participant) => handleTrackUnsubscribed(GREEN, track, publication, participant))
-  .on(livekit.RoomEvent.Disconnected, handleDisconnect)
-  .on(livekit.RoomEvent.LocalTrackUnpublished, handleLocalTrackUnpublished);
+//     const broadcastingChannels = getBroadcastingChannels();
+//     if (broadcastingChannels?.length) {
+//       // Otherwise, let the normal updateRadioControls() in pause() display the proper message.
+//       displayLoading('IN_PROGRESS', 'Channel broadcast ended.');
+//     } else {
+//       displayLoading('IN_PROGRESS', 'Broadcast ended. Wait for the next event!');
+//     }
+//   } else {
+//     updateRadioControls();
+//   }
+// }
 
 const pause = () => {
   stopAudioPlayback();
@@ -176,10 +160,8 @@ const playChannel = async (channel) => {
     currentChannel = channel;
   }
 
-  const channelCache = livekitCache[currentChannel];
-  channelCache.publication.setEnabled(true);
   updateRadioControls();
-  startAudioPlayback(channelCache.track);
+  startAudioPlayback(channel);
   noSleep.enable();
 }
 
@@ -215,22 +197,22 @@ const throwError = (error, customMessage) => {
   throw new Error(fullErrorMessage);
 }
 
-const connectToLivekit = async () => {
-  const response = await fetch(`${TOKEN_SERVER_URI}/issue-tokens`,
-    {
-      method: 'GET',
-      headers: new Headers({ "ngrok-skip-browser-warning": "69420" })
-    }
-  )
-    .then(response => response.json())
-    .catch(error => throwError(error, 'Connection failed (code 1).'));
+// const connectToLivekit = async () => {
+//   const response = await fetch(`${TOKEN_SERVER_URI}/issue-tokens`,
+//     {
+//       method: 'GET',
+//       headers: new Headers({ "ngrok-skip-browser-warning": "69420" })
+//     }
+//   )
+//     .then(response => response.json())
+//     .catch(error => throwError(error, 'Connection failed (code 1).'));
 
-  const redConnect = redChannel.connect(WEBRTC_SERVER_URI, response[RED]);
-  const blueConnect = blueChannel.connect(WEBRTC_SERVER_URI, response[BLUE]);
-  const greenConnect =  greenChannel.connect(WEBRTC_SERVER_URI, response[GREEN]);
-  await Promise.all([redConnect, blueConnect, greenConnect])
-    .catch(error => throwError(error, 'Connection failed (code 2).'));
-}
+//   const redConnect = redChannel.connect(WEBRTC_SERVER_URI, response[RED]);
+//   const blueConnect = blueChannel.connect(WEBRTC_SERVER_URI, response[BLUE]);
+//   const greenConnect =  greenChannel.connect(WEBRTC_SERVER_URI, response[GREEN]);
+//   await Promise.all([redConnect, blueConnect, greenConnect])
+//     .catch(error => throwError(error, 'Connection failed (code 2).'));
+// }
 
 // type: 'INITIALIZE' | null
 const updateRadioControls = (type) => {
@@ -238,7 +220,6 @@ const updateRadioControls = (type) => {
   if (!initializedRadioControls) initializedRadioControls = true;
 
   const broadcastingChannels = getBroadcastingChannels();
-  console.log(`livekitCache: ${JSON.stringify(livekitCache)}`);
   console.log(`broadcastingChannels: ${broadcastingChannels}`);
   if (!broadcastingChannels?.length) {
     document.getElementById("radio-controls").style.display = 'none';
@@ -314,7 +295,7 @@ const updateRadioControls = (type) => {
 }
 
 const initialize = async () => {
-  await connectToLivekit();
+  console.log('-1');
 
   document.getElementById("play").addEventListener("click", () => playChannel(currentChannel));
   document.getElementById("pause").addEventListener("click", pause);
@@ -324,6 +305,11 @@ const initialize = async () => {
   const broadcastingChannels = getBroadcastingChannels();
   currentChannel = broadcastingChannels[Math.floor(Math.random() * broadcastingChannels.length)];
   updateRadioControls('INITIALIZE');
+
+  console.log('0');
+
+  // THIS WILL COME FROM A WEBSOCKET INFORMING WHICH CHANNELS ARE BROADCASTING
+  subscribe(currentChannel);
 }
 
 initialize();
