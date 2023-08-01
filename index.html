@@ -2,8 +2,14 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+      @font-face {
+        font-family: 'Runescape';
+        src: url('runescape.ttf');
+      }
+
       body {
         margin: 0;
+        font-family: monospace;
       }
 
       #sunburst, #sunburst2 {
@@ -38,13 +44,10 @@
         display: flex;
         justify-content: center;
         align-items: center;
-      }
-
-      h1 {
-        font-size: 23px;
-        font-family: monospace;
-        letter-spacing: 2px;
-        margin: 0;
+        font-family: Runescape;
+        font-size: 26px;
+        font-weight: bold;
+        text-shadow: 1px 1px #00000059;
       }
 
       .blinking {
@@ -63,6 +66,7 @@
         height: 100%;
         position: relative;
         overflow: hidden;
+        align-items: center;
       }
 
       #content {
@@ -73,7 +77,8 @@
         flex: 1;
         max-width: 362px;
         margin: 25px;
-        color: #101010;
+        color: #2a303b;
+        font-size: 15px;
       }
 
       #subtitle {
@@ -106,6 +111,98 @@
         min-height: 35px;
         text-align: center;
       }
+
+      @keyframes glow {
+        0% {
+          color: #FF0000;
+        }
+        33% {
+          color: #00B000;
+        }
+        66% {
+          color: #0000FF;
+        }
+        100% {
+          color: #FF0000;
+        }
+      }
+      @keyframes wave {
+        0% {
+          transform: translateY(0);
+        }
+        25% {
+          transform: translateY(4px);
+        }
+        50% {
+          transform: translateY(0);
+        }
+        75% {
+          transform: translateY(-4px);
+        }
+        100% {
+          transform: translateY(0px);
+        }
+      }
+      .t1 {
+        display: inline-block;
+        animation: wave 4s linear infinite -50ms, glow 4s linear infinite -50ms;
+      }
+      .t2 {
+        display: inline-block;
+        animation: wave 4s linear infinite -150ms, glow 4s linear infinite -100ms;
+      }
+      .t3 {
+        display: inline-block;
+        animation: wave 4s linear infinite -250ms, glow 4s linear infinite -150ms;
+      }
+      .t4 {
+        display: inline-block;
+        animation: wave 4s linear infinite -350ms, glow 4s linear infinite -200ms;
+      }
+      .t5 {
+        display: inline-block;
+        animation: wave 4s linear infinite -450ms, glow 4s linear infinite -250ms;
+      }
+      .t6 {
+        display: inline-block;
+        animation: wave 4s linear infinite -550ms, glow 4s linear infinite -300ms;
+      }
+      .t7 {
+        display: inline-block;
+        animation: wave 4s linear infinite -650ms, glow 4s linear infinite -350ms;
+      }
+      .t8 {
+        display: inline-block;
+        animation: wave 4s linear infinite -750ms, glow 4s linear infinite -400ms;
+      }
+      .t9 {
+        display: inline-block;
+        animation: wave 4s linear infinite -850ms, glow 4s linear infinite -450ms;
+      }
+      .t10 {
+        display: inline-block;
+        animation: wave 4s linear infinite -950ms, glow 4s linear infinite -500ms;
+      }
+      .t11 {
+        display: inline-block;
+        animation: wave 4s linear infinite -1050ms, glow 4s linear infinite -550ms;
+      }
+      .t12 {
+        display: inline-block;
+        animation: wave 4s linear infinite -1150ms, glow 4s linear infinite -600ms;
+      }
+      .t13 {
+        display: inline-block;
+        animation: wave 4s linear infinite -1250ms, glow 4s linear infinite -650ms;
+      }
+      .t14 {
+        display: inline-block;
+        animation: wave 4s linear infinite -1350ms, glow 4s linear infinite -700ms;
+      }
+      .t15 {
+        display: inline-block;
+        animation: wave 4s linear infinite -1450ms, glow 4s linear infinite -750ms;
+      }
     </style>
   </head>
 
@@ -115,10 +212,24 @@
       <div id='sunburst2'></div>
       <div id='content'>
         <div id='title'>
-          <h1>BackTogether.FM</h1>
+            <span class='t1'>B</span>
+            <span class='t2'>a</span>
+            <span class='t3'>c</span>
+            <span class='t4'>k</span>
+            <span class='t5'>T</span>
+            <span class='t6'>o</span>
+            <span class='t7'>g</span>
+            <span class='t8'>e</span>
+            <span class='t9'>t</span>
+            <span class='t10'>h</span>
+            <span class='t11'>e</span>
+            <span class='t12'>r</span>
+            <span class='t13'>.</span>
+            <span class='t14'>F</span>
+            <span class='t15'>M</span>
         </div>
         <p id='subtitle'>
-          Synchronized internet radio for all.
+          Synchronized internet radio.
           <a href='https://github.com/rubyonrials/backtogetherfm' target='_blank'>&#9432;</a>
         </p>
 
