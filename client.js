@@ -5,6 +5,12 @@
 // 5. weekly radio show for relaxed dj-ing, comedy spots, news/updates
 import * as livekit from "https://esm.sh/livekit-client@1.6.3";
 import NoSleep from "https://esm.sh/nosleep.js@0.12.0";
+import Hls from "https://esm.sh/hls.js@1.3.4";
+ import {
+                TimingObject,
+                TimingSampler,
+                TimingProgress
+            } from "https://webtiming.github.io/timingsrc/lib/timingsrc-esm-v3.js";
 var noSleep = new NoSleep();
 
 const TOKEN_SERVER_URI = 'https://backtogetherfm-server.herokuapp.com';
@@ -59,7 +65,7 @@ var channelState = {
 // const audioSrc = 'http://localhost:3000/imgood.m3u8';
 // This will probably be replaced by a response from a broadcast source URLs API...
 var hlsSourceDirectory = {
-  [ RED ]: 'https://backtogetherfm-server.herokuapp.com/source-hls/imgood.m3u8',
+  [ RED ]: 'http://localhost:6900/imgood.m3u8',
   [ BLUE ]: '',
   [ GREEN ]: ''
 }
@@ -91,6 +97,8 @@ const stopAudioPlayback = () => {
 const startAudioPlayback = async () => {
 
   if (!userInitiatedPlayback) userInitiatedPlayback = true;
+            timingObject.update({velocity:1});
+  return;
   // Is current channel broadcasting?
   const audioPlayer = getAudioPlayer();
 
@@ -103,7 +111,16 @@ const startAudioPlayback = async () => {
         hls.loadSource(hlsSourceDirectory[channel]);
         hls.attachMedia(audioPlayer);
         hls.on(Hls.Events.MANIFEST_PARSED, async () => {
-          await audioPlayer.play(); //set BROADCASTING state
+          // console.log('HLS MANIFEST PARSED'); console.log(hls);
+          // console.log(hls.levels);
+          // console.log(hls.levels[0]);
+          // console.log(hls.levels[0].details);
+          // await audioPlayer.play(); //set BROADCASTING state
+          try {
+            timingObject.update({velocity:1});
+          } catch(error) {
+            console.error('error: ', error);
+          }
           resolve();
         });
       });
@@ -146,25 +163,23 @@ const subscribe = async (channel) => {
   updateRadioControls(reinitialize ? 'INITIALIZE' : null);
 }
 
-// const handleTrackUnsubscribed = (channel) => {
-//   console.log('channelUnsubscribed');
+const unsubscribe = (channel) => {
+  console.log('unsubscribe');
 
-//   track.detach();
+  if (channel === currentChannel) {
+    pause();
 
-//   if (channel === currentChannel) {
-//     pause();
-
-//     const broadcastingChannels = getBroadcastingChannels();
-//     if (broadcastingChannels?.length) {
-//       // Otherwise, let the normal updateRadioControls() in pause() display the proper message.
-//       displayLoading('IN_PROGRESS', 'Channel broadcast ended.');
-//     } else {
-//       displayLoading('IN_PROGRESS', 'Broadcast ended. Wait for the next event!');
-//     }
-//   } else {
-//     updateRadioControls();
-//   }
-// }
+    const broadcastingChannels = getBroadcastingChannels();
+    if (broadcastingChannels?.length) {
+      // Otherwise, let the normal updateRadioControls() in pause() display the proper message.
+      displayLoading('IN_PROGRESS', 'Channel broadcast ended.');
+    } else {
+      displayLoading('IN_PROGRESS', 'Broadcast ended. Wait for the next event!');
+    }
+  } else {
+    updateRadioControls();
+  }
+}
 
 const pause = () => {
   stopAudioPlayback();
@@ -217,7 +232,7 @@ const throwError = (error, customMessage) => {
 }
 
 // const subscribeToBroadcasts = async () => {
-//   const redConnect = 
+//   const redConnect =
 // }
 
 // const connectToLivekit = async () => {
@@ -317,6 +332,7 @@ const updateRadioControls = (type) => {
   document.getElementById("radio-controls").style.display = 'flex';
 }
 
+        const timingObject = new TimingObject();
 const initialize = async () => {
   console.log('-1');
 
@@ -333,6 +349,18 @@ const initialize = async () => {
 
   // THIS WILL COME FROM A WEBSOCKET INFORMING WHICH CHANNELS ARE BROADCASTING
   subscribe(currentChannel);
+  getAudioPlayer().addEventListener('ended', () => unsubscribe(currentChannel));
+
+  try {
+    // anon users have access to write to the timingObject's update function... probably only the server should do that
+        const mcorp = MCorp.app("1543452303524414083", {anon:true});
+        mcorp.ready.then(function() {
+            timingObject.timingsrc = mcorp.motions["shared"];
+        });
+        const sync = MCorp.mediaSync(getAudioPlayer(), timingObject, { debug: true });
+  } catch(error) {
+    console.error('mcorp error', error);
+  }
 }
 
 initialize();

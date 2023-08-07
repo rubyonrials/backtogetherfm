@@ -229,6 +229,7 @@
             <span class='t15'>M</span>
         </div>
         <p id='subtitle'>
+          <!-- Synchronized internet radio. -->
           Internet silent disco.
           <a href='https://github.com/rubyonrials/backtogetherfm' target='_blank'>&#9432;</a>
         </p>
@@ -247,7 +248,11 @@
     </div>
 
     <p id="debug"></p>
-    <audio id="hls-audio" title='BackTogether.FM'></audio>
+    <audio id="hls-audio" title='BackTogether.FM' src='http://localhost:6900/ladiesnight.mp3'></audio>
+
+    <script type="text/javascript" src="https://www.mcorp.no/lib/mcorp-2.0.js"></script>
+    <script src="https://mcorp.no/lib/mediasync.js"></script>
+
     <script type="module" src="client.js"></script>
   </body>
 </html>
