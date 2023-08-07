@@ -5,7 +5,6 @@
 // 5. weekly radio show for relaxed dj-ing, comedy spots, news/updates
 import * as livekit from "https://esm.sh/livekit-client@1.6.3";
 import NoSleep from "https://esm.sh/nosleep.js@0.12.0";
-import Hls from "https://esm.sh/hls.js@1.3.4";
 var noSleep = new NoSleep();
 
 const TOKEN_SERVER_URI = 'https://backtogetherfm-server.herokuapp.com';
@@ -315,7 +314,6 @@ const updateRadioControls = (type) => {
 }
 
 const initialize = async () => {
-  console.log('-1');
   await connectToLivekit();
 
   document.getElementById("play").addEventListener("click", () => playChannel(currentChannel));
@@ -323,41 +321,9 @@ const initialize = async () => {
   document.getElementById("channel-backward").addEventListener("click", () => playChannel(channelBackward));
   document.getElementById("channel-forward").addEventListener("click", () => playChannel(channelForward));
 
-  // Give Livekit time to handleTrackSubscribed()
-  // await new Promise(r => setTimeout(r, 500));
-
   const broadcastingChannels = getBroadcastingChannels();
   currentChannel = broadcastingChannels[Math.floor(Math.random() * broadcastingChannels.length)];
   updateRadioControls('INITIALIZE');
-
-
-
-
-
-  console.log('0');
-  const audioPlayer = document.getElementById('hls-audio');
-  const audioSrc = 'https://backtogetherfm-server.herokuapp.com/source-hls/imgood.m3u8';
-  // const audioSrc = 'http://localhost:3000/imgood.m3u8';
-
-  if (Hls.isSupported()) {
-    console.log('1');
-    const hls = new Hls();
-    hls.loadSource(audioSrc);
-    hls.attachMedia(audioPlayer);
-    hls.on(Hls.Events.MANIFEST_PARSED, function () {
-      audioPlayer.play();
-    });
-  } else if (audioPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-    console.log('2');
-    // For browsers with native HLS support (e.g., Safari)
-    audioPlayer.src = audioSrc;
-    audioPlayer.addEventListener('loadedmetadata', function () {
-      audioPlayer.play();
-    });
-  } else {
-    console.log('3');
-    console.error('HLS.js is not supported in this browser.');
-  }
 }
 
 initialize();
