@@ -1,36 +1,21 @@
-// 1. Consider saving JWT as cookie for individual participants to aid Livekit Cloud analytics (i.e. don't need to reissue an auth token every time your refresh... could be needless complication tho)
-// 2. Now-playing would be cool; move blinking red light to "LIVE"
-// 3. rename branch to main, push to GH, write readme
-// 4. notification system for in-person vs. online events
-// 5. weekly radio show for relaxed dj-ing, comedy spots, news/updates
-import * as livekit from "https://esm.sh/livekit-client@1.6.3";
+// TODO
+// Now-playing would be cool; move blinking red light to "LIVE"
+// Write the README
+// notification system for in-person and online events
+// weekly radio show for relaxed dj-ing, comedy spots, news/updates
 import NoSleep from "https://esm.sh/nosleep.js@0.12.0";
 import Hls from "https://esm.sh/hls.js@1.3.4";
- import {
-                TimingObject,
-                TimingSampler,
-                TimingProgress
-            } from "https://webtiming.github.io/timingsrc/lib/timingsrc-esm-v3.js";
 var noSleep = new NoSleep();
 
-const TOKEN_SERVER_URI = 'https://backtogetherfm-server.herokuapp.com';
-const WEBRTC_SERVER_URI = 'wss://backtogetherfm.livekit.cloud';
+// const SERVER_URI = 'https://backtogetherfm-server.herokuapp.com';
+const SERVER_URI = 'http://localhost:6900';
 const RED = 'red';
 const BLUE = 'blue';
 const GREEN = 'green';
 const LIVE_COLOR_OPAQUE = '#ffb100ba';
 const LIVE_COLOR_TRANSPARENT = '#ffb10042';
 const AUDIO_PLAYER_ID = 'hls-audio';
-
-// Channel states
-const INITIAL = 'INITIAL';
-const NO_BROADCAST = 'NO_BROADCAST';
-const BROADCASTING = 'BROADCASTING';
-
-var currentChannel, channelBackward, channelForward;
-var initializedRadioControls, userInitiatedPlayback = false;
-
-const channelDirectory = {
+const CHANNEL_DIRECTORY = {
   red: {
     colorOpaque:'#dc322fba',
     colorTransparent:'#dc322f42',
@@ -48,34 +33,15 @@ const channelDirectory = {
   }
 }
 
-// broadcastState: INITIAL | NO_BROADCAST | BROADCASTING
-var channelState = {
-  [ RED ] : {
-    broadcastState: INITIAL
-  },
-  [ GREEN ] : {
-    broadcastState: INITIAL
-  },
-  [ BLUE ] : {
-    broadcastState: INITIAL
-  }
-}
-
-// const audioSrc = 'https://backtogetherfm-server.herokuapp.com/source-hls/imgood.m3u8';
-// const audioSrc = 'http://localhost:3000/imgood.m3u8';
-// This will probably be replaced by a response from a broadcast source URLs API...
-var hlsSourceDirectory = {
-  [ RED ]: 'http://localhost:6900/imgood.m3u8',
-  [ BLUE ]: '',
-  [ GREEN ]: ''
-}
+var currentChannel, channelBackward, channelForward;
+var initializedRadioControls, userInitiatedPlayback = false;
 
 const getAudioPlayer = () => {
   return document.getElementById(AUDIO_PLAYER_ID);
 }
 
 const getBroadcastingChannels = () => {
-  return [RED];
+  return [BLUE];
   // return Object.keys(livekitCache).filter(channel => {
   //   return !!livekitCache[channel].track && !!livekitCache[channel].publication
   // });
@@ -93,54 +59,47 @@ const stopAudioPlayback = () => {
 
 // In this function, we promisify callback-based APIs needed for initializing.
 // This allows us to wait until <audio> has actually started playing.
-// https://chat.openai.com/c/2cdcc72b-4943-4606-ac67-603e1a475d09
 const startAudioPlayback = async () => {
-
   if (!userInitiatedPlayback) userInitiatedPlayback = true;
-            timingObject.update({velocity:1});
-  return;
   // Is current channel broadcasting?
   const audioPlayer = getAudioPlayer();
 
-  if (Hls.isSupported()) {
-    const initializeHlsJs = (channel) => {
-      const audioPlayer = getAudioPlayer();
+  const streamFilename = await fetch(`${SERVER_URI}/stream/${currentChannel}`,
+    {
+      method: 'POST',
+      headers: new Headers({ "ngrok-skip-browser-warning": "69420" })
+    }
+  )
+    .then(response => response.text())
+    .catch(error => throwError(error, 'Connection failed (code 1).'));
+  const streamPath = `${SERVER_URI}/${streamFilename}`;
 
+  if (Hls.isSupported()) {
+    const initializeHlsJs = () => {
       return new Promise((resolve, reject) => {
         const hls = new Hls();
-        hls.loadSource(hlsSourceDirectory[channel]);
+        hls.loadSource(streamPath);
         hls.attachMedia(audioPlayer);
         hls.on(Hls.Events.MANIFEST_PARSED, async () => {
-          // console.log('HLS MANIFEST PARSED'); console.log(hls);
-          // console.log(hls.levels);
-          // console.log(hls.levels[0]);
-          // console.log(hls.levels[0].details);
-          // await audioPlayer.play(); //set BROADCASTING state
-          try {
-            timingObject.update({velocity:1});
-          } catch(error) {
-            console.error('error: ', error);
-          }
+          await audioPlayer.play();
           resolve();
         });
       });
     }
 
-    await initializeHlsJs(currentChannel);
+    await initializeHlsJs();
   } else if (audioPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-    const initializeNativeHls = (channel) => {
-      const audioPlayer = getAudioPlayer();
-
+    const initializeNativeHls = () => {
       return new Promise((resolve, reject) => {
-        audioPlayer.src = hlsSourceDirectory[channel];
+        audioPlayer.src = streamPath;
         audioPlayer.addEventListener('loadedmetadata', async () => {
-          await audioPlayer.play(); // set BROADCASTING state
+          await audioPlayer.play();
           resolve();
         });
       });
     };
 
-    await initializeNativeHls(currentChannel);
+    await initializeNativeHls();
   } else {
     console.error('HLS.js is not supported in this browser.');
   }
@@ -193,8 +152,7 @@ const playChannel = async (channel) => {
     currentChannel = channel;
   }
 
-  await startAudioPlayback(channel);
-  // await new Promise(r => setTimeout(r, 100));
+  await startAudioPlayback();
   updateRadioControls();
   noSleep.enable();
 }
@@ -230,27 +188,6 @@ const throwError = (error, customMessage) => {
   displayLoading('ERROR', fullErrorMessage);
   throw new Error(fullErrorMessage);
 }
-
-// const subscribeToBroadcasts = async () => {
-//   const redConnect =
-// }
-
-// const connectToLivekit = async () => {
-//   const response = await fetch(`${TOKEN_SERVER_URI}/issue-tokens`,
-//     {
-//       method: 'GET',
-//       headers: new Headers({ "ngrok-skip-browser-warning": "69420" })
-//     }
-//   )
-//     .then(response => response.json())
-//     .catch(error => throwError(error, 'Connection failed (code 1).'));
-
-//   const redConnect = redChannel.connect(WEBRTC_SERVER_URI, response[RED]);
-//   const blueConnect = blueChannel.connect(WEBRTC_SERVER_URI, response[BLUE]);
-//   const greenConnect =  greenChannel.connect(WEBRTC_SERVER_URI, response[GREEN]);
-//   await Promise.all([redConnect, blueConnect, greenConnect])
-//     .catch(error => throwError(error, 'Connection failed (code 2).'));
-// }
 
 // type: 'INITIALIZE' | null
 const updateRadioControls = (type) => {
@@ -290,8 +227,8 @@ const updateRadioControls = (type) => {
     }
   }
 
-  var currentColorOpaque = channelDirectory[currentChannel].colorOpaque;
-  var currentColorTransparent = channelDirectory[currentChannel].colorTransparent;
+  var currentColorOpaque = CHANNEL_DIRECTORY[currentChannel].colorOpaque;
+  var currentColorTransparent = CHANNEL_DIRECTORY[currentChannel].colorTransparent;
 
   if (!channelBackward && !channelForward) {
     currentColorOpaque = LIVE_COLOR_OPAQUE;
@@ -299,14 +236,14 @@ const updateRadioControls = (type) => {
   }
 
   if (channelBackward && type !== 'INITIALIZE') {
-    document.getElementById("channel-backward").style.color = channelDirectory[channelBackward].colorOpaque;
+    document.getElementById("channel-backward").style.color = CHANNEL_DIRECTORY[channelBackward].colorOpaque;
     document.getElementById("channel-backward").style.visibility = 'visible';
   } else {
     document.getElementById("channel-backward").style.visibility = 'hidden';
   }
 
   if (channelForward && type !== 'INITIALIZE') {
-    document.getElementById("channel-forward").style.color = channelDirectory[channelForward].colorOpaque;
+    document.getElementById("channel-forward").style.color = CHANNEL_DIRECTORY[channelForward].colorOpaque;
     document.getElementById("channel-forward").style.visibility = 'visible';
   } else {
     document.getElementById("channel-forward").style.visibility = 'hidden';
@@ -332,7 +269,6 @@ const updateRadioControls = (type) => {
   document.getElementById("radio-controls").style.display = 'flex';
 }
 
-        const timingObject = new TimingObject();
 const initialize = async () => {
   console.log('-1');
 
@@ -350,17 +286,6 @@ const initialize = async () => {
   // THIS WILL COME FROM A WEBSOCKET INFORMING WHICH CHANNELS ARE BROADCASTING
   subscribe(currentChannel);
   getAudioPlayer().addEventListener('ended', () => unsubscribe(currentChannel));
-
-  try {
-    // anon users have access to write to the timingObject's update function... probably only the server should do that
-        const mcorp = MCorp.app("1543452303524414083", {anon:true});
-        mcorp.ready.then(function() {
-            timingObject.timingsrc = mcorp.motions["shared"];
-        });
-        const sync = MCorp.mediaSync(getAudioPlayer(), timingObject, { debug: true });
-  } catch(error) {
-    console.error('mcorp error', error);
-  }
 }
 
 initialize();
