@@ -3,9 +3,10 @@
 // Write the README
 // notification system for in-person and online events
 // weekly radio show for relaxed dj-ing, comedy spots, news/updates
-import NoSleep from "https://esm.sh/nosleep.js@0.12.0";
-import Hls from "https://esm.sh/hls.js@1.3.4";
-var noSleep = new NoSleep();
+
+// import NoSleep from "https://esm.sh/nosleep.js@0.12.0";
+// import Hls from "https://esm.sh/hls.js@1.3.4";
+// var noSleep = new NoSleep();
 
 // const SERVER_URI = 'https://backtogetherfm-server.herokuapp.com';
 const SERVER_URI = 'http://localhost:6900';
@@ -54,7 +55,7 @@ const currentChannelIsPlaying = () => {
 const stopAudioPlayback = () => {
   const audioPlayer = getAudioPlayer();
   audioPlayer.pause();
-  noSleep.disable();
+  // noSleep.disable();
 }
 
 // In this function, we promisify callback-based APIs needed for initializing.
@@ -74,21 +75,22 @@ const startAudioPlayback = async () => {
     .catch(error => throwError(error, 'Connection failed (code 1).'));
   const streamPath = `${SERVER_URI}/${streamFilename}`;
 
-  if (Hls.isSupported()) {
-    const initializeHlsJs = () => {
-      return new Promise((resolve, reject) => {
-        const hls = new Hls();
-        hls.loadSource(streamPath);
-        hls.attachMedia(audioPlayer);
-        hls.on(Hls.Events.MANIFEST_PARSED, async () => {
-          await audioPlayer.play();
-          resolve();
-        });
-      });
-    }
+  // if (Hls.isSupported()) {
+  //   const initializeHlsJs = () => {
+  //     return new Promise((resolve, reject) => {
+  //       const hls = new Hls();
+  //       hls.loadSource(streamPath);
+  //       hls.attachMedia(audioPlayer);
+  //       hls.on(Hls.Events.MANIFEST_PARSED, async () => {
+  //         await audioPlayer.play();
+  //         resolve();
+  //       });
+  //     });
+  //   }
 
-    await initializeHlsJs();
-  } else if (audioPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+  //   await initializeHlsJs();
+  // } else if (audioPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+  if (audioPlayer.canPlayType('application/vnd.apple.mpegurl')) {
     const initializeNativeHls = () => {
       return new Promise((resolve, reject) => {
         audioPlayer.src = streamPath;
@@ -154,7 +156,7 @@ const playChannel = async (channel) => {
 
   await startAudioPlayback();
   updateRadioControls();
-  noSleep.enable();
+  // noSleep.enable();
 }
 
 // type: 'NONE' | 'IN_PROGRESS' | 'ERROR' | 'WARNING'
