@@ -1,4 +1,5 @@
 // TODO
+// safari prefetches 15 mins !! of data but DOES NOT cache ts chunks??
 // Now-playing would be cool; move blinking red light to "LIVE"
 // Write the README
 // notification system for in-person and online events
@@ -41,11 +42,16 @@ const getAudioPlayer = () => {
   return document.getElementById(AUDIO_PLAYER_ID);
 }
 
-const getBroadcastingChannels = () => {
-  return [BLUE];
-  // return Object.keys(livekitCache).filter(channel => {
-  //   return !!livekitCache[channel].track && !!livekitCache[channel].publication
-  // });
+const getStreamableChannels = async () => {
+  const streamableChannels = await fetch(`${SERVER_URI}/getStreamableChannels`,
+    {
+      method: 'GET',
+      headers: new Headers({ "ngrok-skip-browser-warning": "69420" })
+    }
+  )
+    .then(response => response.json())
+    .catch(error => throwError(error, 'Connection failed (code 1).'));
+  return Object.keys(streamableChannels);
 }
 
 const currentChannelIsPlaying = () => {
@@ -124,14 +130,14 @@ const subscribe = async (channel) => {
   updateRadioControls(reinitialize ? 'INITIALIZE' : null);
 }
 
-const unsubscribe = (channel) => {
+const unsubscribe = async (channel) => {
   console.log('unsubscribe');
 
   if (channel === currentChannel) {
     pause();
 
-    const broadcastingChannels = getBroadcastingChannels();
-    if (broadcastingChannels?.length) {
+    const streamableChannels = await getStreamableChannels();
+    if (streamableChannels?.length) {
       // Otherwise, let the normal updateRadioControls() in pause() display the proper message.
       displayLoading('IN_PROGRESS', 'Channel broadcast ended.');
     } else {
@@ -192,13 +198,13 @@ const throwError = (error, customMessage) => {
 }
 
 // type: 'INITIALIZE' | null
-const updateRadioControls = (type) => {
+const updateRadioControls = async (type) => {
   if (!initializedRadioControls && type !== 'INITIALIZE') return;
   if (!initializedRadioControls) initializedRadioControls = true;
 
-  const broadcastingChannels = getBroadcastingChannels();
-  console.log(`broadcastingChannels: ${broadcastingChannels}`);
-  if (!broadcastingChannels?.length) {
+  const streamableChannels = await getStreamableChannels();
+  console.log(`streamableChannels: ${streamableChannels}`);
+  if (!streamableChannels?.length) {
     document.getElementById("radio-controls").style.display = 'none';
     document.getElementById("sunburst").style.background = 'none';
     document.getElementById("sunburst2").style.background = 'none';
@@ -209,13 +215,13 @@ const updateRadioControls = (type) => {
 
   displayLoading('NONE');
 
-  const otherBroadcastingChannels = broadcastingChannels.filter(channel => channel !== currentChannel);
-  if (!otherBroadcastingChannels?.length) {
+  const otherStreamableChannels = streamableChannels.filter(channel => channel !== currentChannel);
+  if (!otherStreamableChannels?.length) {
     channelBackward = null;
     channelForward = null;
-  } else if (otherBroadcastingChannels.length === 1) {
+  } else if (otherStreamableChannels.length === 1) {
     channelBackward = null;
-    channelForward = otherBroadcastingChannels[0];
+    channelForward = otherStreamableChannels[0];
   } else {
     if (currentChannel === RED) {
       channelBackward = BLUE;
@@ -258,7 +264,7 @@ const updateRadioControls = (type) => {
     document.getElementById("sunburst").style.background = `repeating-conic-gradient( #ababab 0deg, ${currentColorTransparent} 1deg, #ababab 2deg, #ababab00 3deg)`;
     document.getElementById("sunburst2").style.background = `repeating-conic-gradient(#ababab00 0deg, ${currentChannel} 3deg)`;
   } else {
-    if (broadcastingChannels.includes(currentChannel)) {
+    if (streamableChannels.includes(currentChannel)) {
       document.getElementById("play").style.display = 'block';
     } else {
       document.getElementById("play").style.display = 'none';
@@ -272,20 +278,16 @@ const updateRadioControls = (type) => {
 }
 
 const initialize = async () => {
-  console.log('-1');
-
   document.getElementById("play").addEventListener("click", () => playChannel(currentChannel));
   document.getElementById("pause").addEventListener("click", pause);
   document.getElementById("channel-backward").addEventListener("click", () => playChannel(channelBackward));
   document.getElementById("channel-forward").addEventListener("click", () => playChannel(channelForward));
 
-  const broadcastingChannels = getBroadcastingChannels();
-  currentChannel = broadcastingChannels[Math.floor(Math.random() * broadcastingChannels.length)];
+  const streamableChannels = await getStreamableChannels();
+  currentChannel = streamableChannels[Math.floor(Math.random() * streamableChannels.length)];
   updateRadioControls('INITIALIZE');
 
-  console.log('0');
-
-  // THIS WILL COME FROM A WEBSOCKET INFORMING WHICH CHANNELS ARE BROADCASTING
+  // THIS WILL COME FROM A WEBSOCKET INFORMING WHICH CHANNELS ARE STREAMABLE
   subscribe(currentChannel);
   getAudioPlayer().addEventListener('ended', () => unsubscribe(currentChannel));
 }
