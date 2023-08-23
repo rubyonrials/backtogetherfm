@@ -2,8 +2,8 @@ import NoSleep from "https://esm.sh/nosleep.js@0.12.0";
 import Hls from "https://esm.sh/hls.js@1.3.4";
 var noSleep = new NoSleep();
 
-// const SERVER_URI = 'https://backtogetherfm-server.herokuapp.com';
-const SERVER_URI = 'http://localhost:6900';
+const SERVER_URI = 'https://backtogetherfm-server-7ff91a13ede0.herokuapp.com';
+// const SERVER_URI = 'http://localhost:9876';
 const RED = 'red';
 const BLUE = 'blue';
 const GREEN = 'green';
