@@ -1,5 +1,5 @@
-import NoSleep from "https://esm.sh/nosleep.js@0.12.0";
-import Hls from "https://esm.sh/hls.js@1.3.4";
+import NoSleep from "./nosleep.mjs";
+import Hls from "./hls.mjs";
 var noSleep = new NoSleep();
 
 const SERVER_URI = 'https://backtogetherfm-server-7ff91a13ede0.herokuapp.com';
