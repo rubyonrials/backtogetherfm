@@ -1,6 +1,15 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <!-- For modern browsers - multi-size PNG -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <!-- For iOS - apple-touch-icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <!-- For Windows Metro -->
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/mstile-150x150.png">
     <style>
       @font-face {
         font-family: 'Runescape';
@@ -248,6 +257,7 @@
 
     <p id="debug"></p>
     <audio id="hls-audio" title='BackTogether.FM'></audio>
+    <script src="hls.js"></script>
     <script type="module" src="client.js"></script>
   </body>
 </html>
