@@ -1,7 +1,7 @@
 var noSleep = new NoSleep();
 
-// const SERVER_URI = 'https://backtogetherfm-server-7ff91a13ede0.herokuapp.com';
-const SERVER_URI = 'http://localhost:9876';
+const SERVER_URI = 'http://backtogetherfm-server-7ff91a13ede0.herokuapp.com';
+// const SERVER_URI = 'http://localhost:9876';
 const RED = 'red';
 const BLUE = 'blue';
 const GREEN = 'green';
