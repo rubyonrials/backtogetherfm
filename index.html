@@ -1,5 +1,6 @@
 <html>
   <head>
+    <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <!-- For modern browsers - multi-size PNG -->
@@ -113,7 +114,6 @@
       }
       .radio-control:hover {cursor: pointer;}
       #play, #pause { width: 18px; }
-      #debug { margin: 0; }
 
       #loading {
         margin: 25px 0 0;
@@ -242,12 +242,10 @@
           <a href='https://github.com/rubyonrials/backtogetherfm' target='_blank'>&#9432;</a>
         </p>
 
-        <div id='now-playing'></div>
-
         <div id='radio-controls' style='display: none;'>
           <div id='channel-backward' class='radio-control' style='visibility:hidden;'>⏮︎</div>
-          <div id='play' class='radio-control' style='display:none;'>⏵︎</div>
-          <div id='pause' class='radio-control' style='display:none;'>⏸︎</div>
+          <div id='play' class='radio-control' style='display:none;'>&#x23F5</div>
+          <div id='pause' class='radio-control' style='display:none;'>&#x23F8</div>
           <div id='channel-forward' class='radio-control' style='visibility:hidden;'>⏭︎</div>
         </div>
 
@@ -255,7 +253,6 @@
       </div>
     </div>
 
-    <p id="debug"></p>
     <audio id="hls-audio" title='BackTogether.FM'></audio>
     <script src="hls.js"></script>
     <script type="module" src="client.js"></script>
