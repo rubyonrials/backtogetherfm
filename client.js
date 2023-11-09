@@ -1,5 +1,5 @@
-const SERVER_URI = 'http://backtogetherfm-server-7ff91a13ede0.herokuapp.com';
-// const SERVER_URI = 'http://localhost:9876';
+// const SERVER_URI = 'http://backtogetherfm-server-7ff91a13ede0.herokuapp.com';
+const SERVER_URI = 'http://localhost:9876';
 const RED = 'red';
 const BLUE = 'blue';
 const GREEN = 'green';
@@ -266,8 +266,8 @@ const updateRadioControls = async (type) => {
 const initialize = async () => {
   document.getElementById("play").addEventListener("click", () => playChannel(currentChannel));
   document.getElementById("pause").addEventListener("click", pause);
-  document.getElementById("channel-backward").addEventListener("click", () => playChannel(channelBackward));
-  document.getElementById("channel-forward").addEventListener("click", () => playChannel(channelForward));
+  // document.getElementById("channel-backward").addEventListener("click", () => playChannel(channelBackward));
+  // document.getElementById("channel-forward").addEventListener("click", () => playChannel(channelForward));
   getAudioPlayer().addEventListener('ended', () => unsubscribe(currentChannel));
 
   const streamableChannels = await getStreamableChannels();
