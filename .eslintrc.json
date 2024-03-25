@@ -1,0 +1,7 @@
+{
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 2018, // or a later version
+    "sourceType": "module" // if you are using ES6 modules
+  }
+}

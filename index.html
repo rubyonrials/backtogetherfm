@@ -1,258 +1,299 @@
 <html>
-  <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <!-- For modern browsers - multi-size PNG -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <!-- For iOS - apple-touch-icon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <!-- For Windows Metro -->
-    <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="/mstile-150x150.png">
-    <style>
-      @font-face {
-        font-family: 'Runescape';
-        src: url('runescape.ttf');
-      }
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+		<meta http-equiv="Content-Security-Policy" content="default-src * blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; media-src * blob:;">
 
-      body {
-        margin: 0;
-        font-family: monospace;
-      }
+		<link rel="icon" href="/favicon.ico" type="image/x-icon">
+		<!-- For modern browsers - multi-size PNG -->
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 
-      #sunburst, #sunburst2 {
-        position: absolute;
-        width: 150vmax;
-        height: 150vmax;
-        top: 0;
-        bottom: 0;
-        margin: auto;
-        border-radius: 50%;
-      }
-      #sunburst {
-        animation: rotate 60s cubic-bezier(0.42, 0.3, 0.58, 0.7) infinite;
-        z-index: -1;
-      }
-      #sunburst2 {
-        animation: rotate 45s cubic-bezier(0.42, 0.3, 0.58, 0.7) infinite;
-        z-index: -2;
-      }
+		<style>
+			@font-face {
+				font-family: 'Runescape';
+				src: url('runescape.ttf');
+			}
 
-      @keyframes rotate {
-        from {
-          transform: rotate(0deg);
-        }
-        to {
-          transform: rotate(360deg);
-        }
-      }
+			html, body {
+				height: 100vh;
+			}
 
-      #title {
-        margin: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-family: Runescape;
-        font-size: 26px;
-        font-weight: bold;
-        text-shadow: 1px 1px #00000059;
-      }
+			body {
+				margin: 0;
+				font-family: monospace;
+			}
 
-      .blinking {
-        animation: blink 1s steps(5, start) infinite;
-      }
+			#sunburst, #sunburst2 {
+				position: absolute;
+				width: 150vmax;
+				height: 150vmax;
+				top: 0;
+				bottom: 0;
+				margin: auto;
+				border-radius: 50%;
+			}
+			#sunburst {
+				animation: rotate 60s cubic-bezier(0.42, 0.3, 0.58, 0.7) infinite;
+				z-index: -1;
+			}
+			#sunburst2 {
+				animation: rotate 45s cubic-bezier(0.42, 0.3, 0.58, 0.7) infinite;
+				z-index: -2;
+			}
+			@keyframes rotate {
+				from { transform: rotate(0deg); }
+				to { transform: rotate(360deg); }
+			}
 
-      @keyframes blink {
-        to { visibility: hidden; }
-      }
+			.blinking { animation: blink 1s steps(5, start) infinite; }
+			@keyframes blink { to { visibility: hidden; } }
 
-      #page {
-        background: radial-gradient(circle at center, #fff7dd 33%, #101010 81%);
-        background: #fff7dd;
-        display: flex;
-        justify-content: center;
-        height: 100%;
-        position: relative;
-        overflow: hidden;
-        align-items: center;
-      }
+			#page {
+				background: radial-gradient(circle at center, #fff7dd 33%, #101010 81%);
+				background: #fff7dd;
+				display: flex;
+				justify-content: center;
+				height: 100%;
+				position: relative;
+				overflow: hidden;
+				align-items: center;
+			}
 
-      #content {
-        text-align: center;
-        justify-content: center;
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        max-width: 362px;
-        margin: 25px;
-        color: #2a303b;
-        font-size: 15px;
-      }
+			#content {
+				text-align: center;
+				justify-content: center;
+				display: flex;
+				flex-direction: column;
+				flex: 1;
+				max-width: 362px;
+				margin: 25px;
+				color: #2a303b;
+				font-size: 15px;
+			}
 
-      #subtitle {
-        margin: 6px 0 0;
-      }
+			#subtitle {
+				margin: 6px 0 0;
+			}
 
-      a {
-        font-size: 14px;
-        text-decoration: none;
-      }
+			a {
+				font-size: 14px;
+				text-decoration: none;
+			}
 
-      #radio-controls {
-        display: flex;
-        justify-content: center;
-        margin-top: 25px;
-      }
+			#loading {
+				margin: 25px 0 0;
+				min-height: 35px;
+				text-align: center;
+			}
 
-      .radio-control {
-        font-size: 28px;
-        padding: 0 25px;
-        margin: 0 15px;
-        user-select: none;
-      }
-      .radio-control:hover {cursor: pointer;}
-      #play, #pause { width: 18px; }
+			#title {
+				margin: 0;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				font-family: Runescape;
+				font-size: 26px;
+				font-weight: bold;
+				text-shadow: 1px 1px #00000059;
+			}
+			#title span {
+				display: inline-block;
+			}
+			@keyframes glow {
+				0% { color: #FF0000; }
+				33% { color: #00B000; }
+				66% { color: #0000FF; }
+				100% { color: #FF0000; }
+			}
+			@keyframes wave {
+				0% { transform: translateY(0); }
+				25% { transform: translateY(4px); }
+				50% { transform: translateY(0); }
+				75% { transform: translateY(-4px); }
+				100% { transform: translateY(0px); }
+			}
+			.t1 { animation: wave 4s linear infinite -50ms, glow 4s linear infinite -50ms; }
+			.t2 { animation: wave 4s linear infinite -150ms, glow 4s linear infinite -100ms; }
+			.t3 { animation: wave 4s linear infinite -250ms, glow 4s linear infinite -150ms; }
+			.t4 { animation: wave 4s linear infinite -350ms, glow 4s linear infinite -200ms; }
+			.t5 { animation: wave 4s linear infinite -450ms, glow 4s linear infinite -250ms; }
+			.t6 { animation: wave 4s linear infinite -550ms, glow 4s linear infinite -300ms; }
+			.t7 { animation: wave 4s linear infinite -650ms, glow 4s linear infinite -350ms; }
+			.t8 { animation: wave 4s linear infinite -750ms, glow 4s linear infinite -400ms; }
+			.t9 { animation: wave 4s linear infinite -850ms, glow 4s linear infinite -450ms; }
+			.t10 { animation: wave 4s linear infinite -950ms, glow 4s linear infinite -500ms; }
+			.t11 { animation: wave 4s linear infinite -1050ms, glow 4s linear infinite -550ms; }
+			.t12 { animation: wave 4s linear infinite -1150ms, glow 4s linear infinite -600ms; }
+			.t13 { animation: wave 4s linear infinite -1250ms, glow 4s linear infinite -650ms; }
+			.t14 { animation: wave 4s linear infinite -1350ms, glow 4s linear infinite -700ms; }
+			.t15 { animation: wave 4s linear infinite -1450ms, glow 4s linear infinite -750ms; }
+		</style>
+	</head>
 
-      #loading {
-        margin: 25px 0 0;
-        min-height: 35px;
-        text-align: center;
-      }
+	<body>
+		<div id='page'>
+			<div id='sunburst'></div>
+			<div id='sunburst2'></div>
+			<div id='content'>
+				<div id='title'>
+					<span class='t1'>B</span>
+					<span class='t2'>a</span>
+					<span class='t3'>c</span>
+					<span class='t4'>k</span>
+					<span class='t5'>T</span>
+					<span class='t6'>o</span>
+					<span class='t7'>g</span>
+					<span class='t8'>e</span>
+					<span class='t9'>t</span>
+					<span class='t10'>h</span>
+					<span class='t11'>e</span>
+					<span class='t12'>r</span>
+					<span class='t13'>.</span>
+					<span class='t14'>F</span>
+					<span class='t15'>M</span>
+				</div>
+				<p id='subtitle'>
+					Quality silent disco.
+				</p>
+				<p id='loading' class='blinking'>Connecting...</p>
+			</div>
+		</div>
 
-      @keyframes glow {
-        0% {
-          color: #FF0000;
-        }
-        33% {
-          color: #00B000;
-        }
-        66% {
-          color: #0000FF;
-        }
-        100% {
-          color: #FF0000;
-        }
-      }
-      @keyframes wave {
-        0% {
-          transform: translateY(0);
-        }
-        25% {
-          transform: translateY(4px);
-        }
-        50% {
-          transform: translateY(0);
-        }
-        75% {
-          transform: translateY(-4px);
-        }
-        100% {
-          transform: translateY(0px);
-        }
-      }
-      .t1 {
-        display: inline-block;
-        animation: wave 4s linear infinite -50ms, glow 4s linear infinite -50ms;
-      }
-      .t2 {
-        display: inline-block;
-        animation: wave 4s linear infinite -150ms, glow 4s linear infinite -100ms;
-      }
-      .t3 {
-        display: inline-block;
-        animation: wave 4s linear infinite -250ms, glow 4s linear infinite -150ms;
-      }
-      .t4 {
-        display: inline-block;
-        animation: wave 4s linear infinite -350ms, glow 4s linear infinite -200ms;
-      }
-      .t5 {
-        display: inline-block;
-        animation: wave 4s linear infinite -450ms, glow 4s linear infinite -250ms;
-      }
-      .t6 {
-        display: inline-block;
-        animation: wave 4s linear infinite -550ms, glow 4s linear infinite -300ms;
-      }
-      .t7 {
-        display: inline-block;
-        animation: wave 4s linear infinite -650ms, glow 4s linear infinite -350ms;
-      }
-      .t8 {
-        display: inline-block;
-        animation: wave 4s linear infinite -750ms, glow 4s linear infinite -400ms;
-      }
-      .t9 {
-        display: inline-block;
-        animation: wave 4s linear infinite -850ms, glow 4s linear infinite -450ms;
-      }
-      .t10 {
-        display: inline-block;
-        animation: wave 4s linear infinite -950ms, glow 4s linear infinite -500ms;
-      }
-      .t11 {
-        display: inline-block;
-        animation: wave 4s linear infinite -1050ms, glow 4s linear infinite -550ms;
-      }
-      .t12 {
-        display: inline-block;
-        animation: wave 4s linear infinite -1150ms, glow 4s linear infinite -600ms;
-      }
-      .t13 {
-        display: inline-block;
-        animation: wave 4s linear infinite -1250ms, glow 4s linear infinite -650ms;
-      }
-      .t14 {
-        display: inline-block;
-        animation: wave 4s linear infinite -1350ms, glow 4s linear infinite -700ms;
-      }
-      .t15 {
-        display: inline-block;
-        animation: wave 4s linear infinite -1450ms, glow 4s linear infinite -750ms;
-      }
-    </style>
-  </head>
+		<audio id="hls-audio" title='BackTogether.FM'></audio>
+		<script src="hls.js"></script>
+		<script>
+			// const SERVER_URI = 'http://btos.fm';
+			const SERVER_URI = 'http://localhost:9876';
+			const AUDIO_PLAYER_ID = 'hls-audio';
+			var currentChannel;
 
-  <body>
-    <div id='page'>
-      <div id='sunburst'></div>
-      <div id='sunburst2'></div>
-      <div id='content'>
-        <div id='title'>
-            <span class='t1'>B</span>
-            <span class='t2'>a</span>
-            <span class='t3'>c</span>
-            <span class='t4'>k</span>
-            <span class='t5'>T</span>
-            <span class='t6'>o</span>
-            <span class='t7'>g</span>
-            <span class='t8'>e</span>
-            <span class='t9'>t</span>
-            <span class='t10'>h</span>
-            <span class='t11'>e</span>
-            <span class='t12'>r</span>
-            <span class='t13'>.</span>
-            <span class='t14'>F</span>
-            <span class='t15'>M</span>
-        </div>
-        <p id='subtitle'>
-          Internet silent disco.
-          <a href='https://github.com/rubyonrials/backtogetherfm' target='_blank'>&#9432;</a>
-        </p>
+			const getAudioPlayer = () => {
+				return document.getElementById(AUDIO_PLAYER_ID);
+			}
 
-        <div id='radio-controls' style='display: none;'>
-          <div id='play' class='radio-control' style='display:none;'>&#x23F5</div>
-          <div id='pause' class='radio-control' style='display:none;'>&#x23F8</div>
-        </div>
+			const audioPlayerIsPlaying = () => {
+				return !getAudioPlayer().paused;
+			}
 
-        <p id='loading' class='blinking'>Connecting...</p>
-      </div>
-    </div>
+			const stopAudioPlayback = () => {
+				getAudioPlayer().pause();
+			}
 
-    <audio id="hls-audio" title='BackTogether.FM'></audio>
-    <script src="hls.js"></script>
-    <script type="module" src="client.js"></script>
-  </body>
+			const startAudioPlayback = async () => {
+				const audioPlayer = getAudioPlayer();
+
+				const streamFilename = await fetch(`${SERVER_URI}/stream/${currentChannel}`, {
+					method: 'POST',
+					headers: new Headers({ "ngrok-skip-browser-warning": "69420" })
+				})
+					.then(response => response.text())
+					.catch(error => {
+						currentChannel = null;
+						throwError(error, 'Connection failed. Are you connected to BackTogether.FM WiFi?')
+					});
+				const streamPath = `${SERVER_URI}/${streamFilename}`;
+
+				if (Hls.isSupported()) {
+					 const initializeHlsJs = () => {
+						return new Promise((resolve, reject) => {
+						  const hls = new Hls();
+						  hls.loadSource(streamPath);
+						  hls.attachMedia(audioPlayer);
+						  hls.on(Hls.Events.MANIFEST_PARSED, async () => {
+							 await audioPlayer.play();
+							 resolve();
+						  });
+						});
+					}
+
+					await initializeHlsJs();
+				} else if (audioPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+					const initializeNativeHls = () => {
+						return new Promise((resolve, reject) => {
+							audioPlayer.addEventListener('loadedmetadata', async () => {
+								await audioPlayer.play();
+								resolve();
+							});
+							audioPlayer.src = streamPath;
+						});
+					};
+
+					await initializeNativeHls();
+				} else {
+					console.error('HLS.js is not supported in this browser.');
+				}
+			}
+
+			const playChannel = async (channel) => {
+				if (currentChannel !== channel) {
+					stopAudioPlayback();
+					currentChannel = channel;
+				}
+
+				await startAudioPlayback();
+				updateRadioControls();
+			}
+
+			const displayLoading = (type, message = null) => {
+				// type: 'NONE' | 'IN_PROGRESS' | 'ERROR' | 'WARNING'
+				// message: String
+				if (type === 'NONE') {
+					document.getElementById("loading").style.display = 'none';
+					document.getElementById("loading").innerHTML = '';
+				} else {
+					document.getElementById("loading").style.display = 'block';
+					document.getElementById("loading").innerHTML = message;
+				}
+
+				if (type === 'IN_PROGRESS') {
+					document.getElementById("loading").classList.add('blinking');
+				} else {
+					document.getElementById("loading").classList.remove('blinking');
+				}
+
+				if (type === 'ERROR') {
+					document.getElementById("loading").style.color = 'red';
+				} else {
+				document.getElementById("loading").style.color = 'initial';
+				}
+			}
+
+			const throwError = (error, customMessage) => {
+				// error: Error
+				// customMessage: String
+				const fullErrorMessage = `${customMessage}\n\n ${error}`;
+				displayLoading('ERROR', customMessage);
+				throw new Error(fullErrorMessage);
+			}
+
+			const updateRadioControls = async () => {
+				displayLoading('NONE');
+
+				if(audioPlayerIsPlaying()) {
+					// TODO: Eventually this will come from reading which channels are streamable
+					const COLOR_NAME = 'yellow';
+					const COLOR_OPAQUE = '#ffb100ba';
+					const COLOR_TRANSPARENT = '#ffb10042';
+
+					document.getElementById("page").style.background = `radial-gradient(circle at center, #f7f3ea 25%, ${COLOR_OPAQUE} 81%)`;
+					document.getElementById("sunburst").style.background = `repeating-conic-gradient( #ababab 0deg, ${COLOR_TRANSPARENT} 1deg, #ababab 2deg, #ababab00 3deg)`;
+					document.getElementById("sunburst2").style.background = `repeating-conic-gradient(#ababab00 0deg, ${COLOR_NAME} 3deg)`;
+				} else {
+					document.getElementById("sunburst").style.background = 'none';
+					document.getElementById("sunburst2").style.background = 'none';
+				}
+			}
+
+			getAudioPlayer().addEventListener('ended', () => {
+				console.log('unsubscribe');
+				stopAudioPlayback();
+				updateRadioControls();
+				displayLoading('IN_PROGRESS', 'Channel broadcast ended.');
+			});
+
+			// NEED TODO: Not playChannel RED, but play channel iff there is one channel streamable
+			playChannel(RED);
+		</script>
+	</body>
 </html>
